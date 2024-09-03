@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+#root files
+*.root
+rootlogon.C
+
+#figures
+*.pdf
+*.png
+
+figures
+
+.vscode
