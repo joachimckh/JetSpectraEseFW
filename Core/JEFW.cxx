@@ -1,7 +1,3 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
-// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
-// All rights not expressly granted are reserved.
-//
 // This software is distributed under the terms of the GNU General Public
 // License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
@@ -27,13 +23,34 @@ JEFW::~JEFW()
 {
 }
 
-void JEFW::Init() {
+JEFW::DataType JEFW::getDataType(const std::string& type) const {
+  if (type == "data") {
+    return DATA;
+  } else if (type == "mc") {
+    return MC;
+  } else {
+    throw std::invalid_argument("Invalid data type");
+  }
+}
+
+void JEFW::Init(std::string type) {
   inFile = unique_ptr<TFile>(new TFile(path,"READ"));
   auto dir = reinterpret_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
-  auto container = reinterpret_cast<JetEseContainer*>(dir->Get("jetContainer"));
-  auto jet_data = container->GetDataArray();
+  // auto container = reinterpret_cast<JetEseContainer*>(dir->Get("jetContainer"));
+  // auto jet_data = container->GetDataArray();
   
-  hist = shared_ptr<TH3F>(reinterpret_cast<TH3F*>(jet_data->FindObject(this->GetPtName("_pt_dPhi_q2"))));
+  switch (getDataType(type)) {
+    case DATA:
+      hist = shared_ptr<TH3F>(reinterpret_cast<TH3F*>(dir->Get(this->GetPtName("_pt_dPhi_q2"))));
+      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("h_jet_pt_bkgsub"));
+      break;
+    case MC:
+      hist_mc = shared_ptr<TH2F>(reinterpret_cast<TH2F*>(dir->Get(this->GetMCName())));
+      hmatched = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt_match"));
+      htruth = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt"));
+      break;
+  }
+  
 };
 
 void JEFW::DrawRaw() const {
@@ -45,7 +62,7 @@ void JEFW::DrawRaw() const {
 
 void JEFW::DrawXYZ(const int lvl) {
   TCanvas c("tmp","",800,600);
-  // MyCanvas c("tmp");
+  
   c.cd();
   const char* name;
   shared_ptr<TH1D> htmp;
@@ -65,7 +82,7 @@ void JEFW::DrawXYZ(const int lvl) {
   }
   htmp->SetLineColor(kBlack);
   htmp->Draw();
-  // c.AddHist(htmp.get());
+  
   c.Draw();
   c.SaveAs(Form("figures/%s.pdf",name));
 };
@@ -112,6 +129,15 @@ void JEFW::SeparatePlanes(std::vector<int> vec_q2limits) {
     hL->Add(tmpH);
   }
   
-  hv_pt->SaveAs("tmp.root");
+  hv_pt->SaveAs(Form("root_files/SeparatePtPlane_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
   delete hv_pt;
+};
+
+void JEFW::AziIntEse(std::vector<int> vec_q2limits) {
+  unique_ptr<TH3F> hTMP = unique_ptr<TH3F>(reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1)))));
+  unique_ptr<TH2F> h_ptq2 = unique_ptr<TH2F>(reinterpret_cast<TH2F*>(hTMP->Project3D("zx")));
+
+  auto h_out = h_ptq2->ProjectionX(Form("pt_q2_%i_%i",vec_q2limits.at(0),vec_q2limits.at(1)),vec_q2limits.at(0),vec_q2limits.at(1));
+
+  h_out->SaveAs(Form("root_files/pt_dphiInt_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
 };

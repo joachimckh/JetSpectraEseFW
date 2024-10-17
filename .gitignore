@@ -42,3 +42,4 @@ rootlogon.C
 figures
 
 .vscode
+*.DS_Store
