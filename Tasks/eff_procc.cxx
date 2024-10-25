@@ -29,11 +29,11 @@ void eff_procc(){
   hmatched->SetLineColor(kBlack);
   hmatched->Draw();
 
-  hmatched->GetXaxis()->SetRangeUser(0, 120);
+  hmatched->GetXaxis()->SetRangeUser(0, 50);
   hmatched->GetYaxis()->SetRangeUser(0, 1.1);
 
   // draw dashed line at 1
-  TLine *line = new TLine(0, 1, 120, 1);
+  TLine *line = new TLine(0, 1, 50, 1);
   line->SetLineStyle(2);
   line->Draw();
 

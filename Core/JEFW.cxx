@@ -36,8 +36,6 @@ JEFW::DataType JEFW::getDataType(const std::string& type) const {
 void JEFW::Init(std::string type) {
   inFile = unique_ptr<TFile>(new TFile(path,"READ"));
   auto dir = reinterpret_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
-  // auto container = reinterpret_cast<JetEseContainer*>(dir->Get("jetContainer"));
-  // auto jet_data = container->GetDataArray();
   
   switch (getDataType(type)) {
     case DATA:

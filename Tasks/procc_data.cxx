@@ -8,10 +8,10 @@ using std::unique_ptr;
 
 void procc_data(){
 
-  unique_ptr<JEFW> jet{new JEFW("../../jetSpectraESE/AnalysisResults.root")};
-  jet->Init();
+  unique_ptr<JEFW> jet{new JEFW("/Users/joachimcarlokristianhansen/jet_analysis/localr/loca_merge/train_278523_sub_jet/AnalysisResults.root")};
+  jet->Init("data");
 
-  int q2Min = 70;
+  int q2Min = 1;
   int q2Max = 100;
   // jet->DrawRaw();
   // jet->DrawXYZ(0);

@@ -32,17 +32,20 @@ using std::unique_ptr;
 class JEfficiency {
   public:
     JEfficiency() = default;
-    explicit JEfficiency(TH1F* hist, TH2F* RESPONSE);
+    explicit JEfficiency(TH1F* hist /* measured data */, TH2F* RESPONSE, TH1F* htruth, TH1F* hmatched);
     ~JEfficiency();
 
 
     TH1D* Unfold(int iterations);
+    TH1D* Efficiency();
     
 
   private:
     // Placeholder for future members and methods
     TH1F* hist;
     TH2F* RESPONSE;
+    TH1F* htruth;
+    TH1F* hmatched;
 
 
   ClassDef(JEfficiency, 1); // jet unfolding class
