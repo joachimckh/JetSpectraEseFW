@@ -8,9 +8,13 @@ using std::unique_ptr;
 
 void v2_procc(){
 
-  TFile *f = new TFile("root_files/SeparatePtPlane_q2_1_100.root","READ");
+  // raw
+  // TFile *f = new TFile("root_files/SeparatePtPlane_q2_1_100.root","READ");
 
-  JEUtility *jet = new JEUtility(f, 1.6); /* R */
+  // unfolded
+  TFile *f = new TFile("root_files/unfolded_q2Inc.root","READ");
+  JEUtility *jet = new JEUtility(f, 0.71); /* R taken from DPG for now */
+  jet->JERebin(16, new Double_t[17]{0,5,10,15,20,25,30,40,50,60,70,80,90,100,120,160,200});
 
   TH1* h = jet->calculateV2Jet();
   h->SaveAs("root_files/v2Jet.root");

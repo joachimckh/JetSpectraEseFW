@@ -62,6 +62,7 @@ class JEFW {
     TH1F* eventPlaneResolution(std::string A, std::string B, std::string C);
     TH1* getEventPlane(const char* name);
 
+    void JERebin(int n, Double_t* bin_edges);
 
   private:
     unique_ptr<TFile> inFile;
@@ -74,9 +75,6 @@ class JEFW {
 
     TDirectory* dir;
 
-    const char* GetMCName() {
-      return "h_response_mat_match";
-    };
 
     DataType getDataType(const std::string& type) const;
    

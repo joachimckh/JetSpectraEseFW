@@ -9,7 +9,6 @@ using std::unique_ptr;
 void data_procc(){
 
   const char* HLrun = "286287";
-
   unique_ptr<JEFW> jet{new JEFW(Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",HLrun))};
   jet->Init("data");
 

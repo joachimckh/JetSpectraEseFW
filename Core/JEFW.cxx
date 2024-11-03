@@ -40,7 +40,7 @@ void JEFW::Init(std::string type)
 
       break;
     case MC:
-      hist_mc = reinterpret_cast<TH2F*>(dir->Get(this->GetMCName()));
+      hist_mc = reinterpret_cast<TH2F*>(dir->Get("h_response_mat_match"));
       hmatched = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt_match"));
       htruth = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt"));
       break;
@@ -194,3 +194,9 @@ TH1* JEFW::getEventPlane(const char* name)
   return hOut;
 };
 
+void JEFW::JERebin(int n, Double_t* bin_edges)
+{
+  /* rebin */
+  hmatched = reinterpret_cast<TH1F*>(hmatched->Rebin(n, "hMatchedReb", bin_edges));
+  htruth = reinterpret_cast<TH1F*>(htruth->Rebin(n, "hTruthReb", bin_edges));
+};

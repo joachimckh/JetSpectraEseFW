@@ -5,6 +5,8 @@
 
 #include "JEUtility.h"
 
+#include <utility>
+
 ClassImp(JEUtility);
 
 JEUtility::JEUtility(TFile* planes, double R) : R(R)
@@ -21,7 +23,8 @@ TH1* JEUtility::calculateV2Jet()
 {
   const double cst = std::numbers::pi/( 3.0 * std::sqrt(3.0) );
 
-  TH1* hReturn = new TH1D("hV2Jet",";#it{p}_{T,jet}; #it{v}_{2}",210,0,210);
+  // TH1* hReturn = new TH1D("hV2Jet",";#it{p}_{T,jet}; #it{v}_{2}",210,0,210);
+  TH1* hReturn = reinterpret_cast<TH1*>(h_in->Clone("hV2Jet"));
 
   for (int i{1}; i < h_in->GetNbinsX()+1; i++)
   {
@@ -47,3 +50,52 @@ TH1* JEUtility::calculateV2Jet()
   return hReturn;
 };
 
+void JEUtility::JERebin(int n, Double_t* bin_edges)
+{
+  /* rebin */
+  h_in = reinterpret_cast<TH1F*>(h_in->Rebin(n, "hInReb", bin_edges));
+  h_out = reinterpret_cast<TH1F*>(h_out->Rebin(n, "hOutReb", bin_edges));
+};
+
+std::tuple<TH1*, TH1*> JEUtility::YieldCorrectedJet()
+{
+  /* 
+    N_in^Corr = N_in + N_out / (1 + N_out^Corr/N_in^Corr) 
+    N_out^Corr= N_in + N_out / (1 + N_in^Corr/N_out^Corr)
+  */
+  TH1* h_rat = this->YieldRatio();
+  TH1* h_in_Corr = reinterpret_cast<TH1*>(h_in->Clone("hYieldCorrectedJet_in"));
+  TH1* h_out_Corr = reinterpret_cast<TH1*>(h_out->Clone("hYieldCorrectedJet_out"));
+  for (int i{1}; i < h_in->GetNbinsX()+1; i++)
+  {
+    float num = h_in->GetBinContent(i) + h_out->GetBinContent(i);
+
+
+    float denum_in = 1.0 + h_rat->GetBinContent(i);
+    float denum_out = 1.0 + 1.0/h_rat->GetBinContent(i);
+    float val_in = (denum_in!=0) ? num/denum_in : 0;
+    float val_out = (denum_out!=0) ? num/denum_out : 0;
+
+    h_in_Corr->SetBinContent(i, val_in);
+    h_in_Corr->SetBinError(i, h_in->GetBinError(i));
+    h_out_Corr->SetBinContent(i, val_out);
+    h_out_Corr->SetBinError(i, h_out->GetBinError(i));
+  }
+
+
+  return std::make_tuple(h_in_Corr, h_out_Corr);
+}
+TH1* JEUtility::YieldRatio()
+{ 
+  /* N_out/N_in */
+  TH1* hV2 = this->calculateV2Jet();
+  TH1 *hRatio = reinterpret_cast<TH1*>(hV2->Clone("hRatio"));
+  for (int i{1}; i < hV2->GetNbinsX()+1; i++)
+  {
+    float num = 2 * std::numbers::pi - 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
+    float denum = 2 * std::numbers::pi + 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
+    float val = (denum!=0) ? num/denum : 0;
+    hRatio->SetBinContent(i, val);
+  }
+  return hRatio;
+}

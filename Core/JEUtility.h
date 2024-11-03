@@ -27,6 +27,12 @@ class JEUtility {
 
     TH1* calculateV2Jet();
 
+    void JERebin(int n, Double_t* bin_edges);
+
+    
+    std::tuple<TH1*, TH1*> YieldCorrectedJet();
+    TH1* YieldRatio();
+
   private:
     TH1* h_in;
     TH1* h_out;
