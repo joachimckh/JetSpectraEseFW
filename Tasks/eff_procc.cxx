@@ -1,6 +1,6 @@
 
-#include "Core/JEFW.h"
-#include "Core/JEfficiency.h"
+#include "../Core/JEFW.h"
+#include "../Core/JEfficiency.h"
 
 #include <memory>
 

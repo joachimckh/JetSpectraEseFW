@@ -38,11 +38,11 @@ class JEFW {
     void DrawXYZ(const int lvl);
 
     int PlaneState(const float &dPhi);
-    void SeparatePlanes(std::vector<int> vec_q2limits);
-    void AziIntEse(std::vector<int> vec_q2limits);
+    auto SeparatePlanes(std::vector<int> vec_q2limits);
+    TH1* AziIntEse(std::vector<int> vec_q2limits);
 
     TH3F* GetHist() const {
-      return hist.get();
+      return hist;
     };
     TH1F* GetHistPt(const int i) const {
       switch (i) {
@@ -56,21 +56,24 @@ class JEFW {
       return nullptr;
     };
     TH2F* GetHistMC() const {
-      return hist_mc.get();
+      return hist_mc;
     };
+
+    TH1F* eventPlaneResolution(std::string A, std::string B, std::string C);
+    TH1* getEventPlane(const char* name);
+
 
   private:
     unique_ptr<TFile> inFile;
     const char* path;
-    shared_ptr<TH3F> hist;
-    shared_ptr<TH2F> hist_mc;
+    TH3F* hist;
+    TH2F* hist_mc;
     TH1F* h_pt_bkg;
     TH1F* htruth;
     TH1F* hmatched;
 
-    const char* GetPtName(const char* pf = "_pt") {
-      return Form("jet%s", pf);
-    };
+    TDirectory* dir;
+
     const char* GetMCName() {
       return "h_response_mat_match";
     };

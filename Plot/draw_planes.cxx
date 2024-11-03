@@ -20,6 +20,11 @@ void draw_planes() {
   TH1F* h_in_inclusive_large = dynamic_cast<TH1F*>(fl->Get("hv_0"));
   TH1F* h_out_inclusive_large = dynamic_cast<TH1F*>(fl->Get("hv_1"));
 
+  // int n = 16;
+  // Double_t bin_edges[17]={0,5,10,15,20,25,30,40,50,60,70,80,90,100,120,160,200};
+  // TH1* h_in_inclusive = h_in_inclusive_raw->Rebin(n, "hInInclusiveReb", bin_edges);
+  // TH1* h_out_inclusive = h_out_inclusive_raw->Rebin(n, "hOutInclusiveReb", bin_edges);
+
   TCanvas c1("c1","",800,600);
   c1.cd();
   

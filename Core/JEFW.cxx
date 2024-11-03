@@ -17,7 +17,8 @@ JEFW::~JEFW()
 {
 }
 
-JEFW::DataType JEFW::getDataType(const std::string& type) const {
+JEFW::DataType JEFW::getDataType(const std::string& type) const 
+{
   if (type == "data") {
     return DATA;
   } else if (type == "mc") {
@@ -27,17 +28,19 @@ JEFW::DataType JEFW::getDataType(const std::string& type) const {
   }
 }
 
-void JEFW::Init(std::string type) {
+void JEFW::Init(std::string type)
+{
   inFile = unique_ptr<TFile>(new TFile(path,"READ"));
-  auto dir = reinterpret_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
+  dir = reinterpret_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
   
   switch (getDataType(type)) {
     case DATA:
-      hist = shared_ptr<TH3F>(reinterpret_cast<TH3F*>(dir->Get(this->GetPtName("_pt_dPhi_q2"))));
-      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("h_jet_pt_bkgsub"));
+      hist = reinterpret_cast<TH3F*>(dir->Get("jet_pt_dPhi_q2;1")); /* hJetPtdPhiq2 */
+      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("h_jet_pt_bkgsub")); /* hJetPt_bkgsub */
+
       break;
     case MC:
-      hist_mc = shared_ptr<TH2F>(reinterpret_cast<TH2F*>(dir->Get(this->GetMCName())));
+      hist_mc = reinterpret_cast<TH2F*>(dir->Get(this->GetMCName()));
       hmatched = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt_match"));
       htruth = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt"));
       break;
@@ -45,30 +48,32 @@ void JEFW::Init(std::string type) {
   
 };
 
-void JEFW::DrawRaw() const {
+void JEFW::DrawRaw() const
+{
   TCanvas c("tmp","",800,600);
   c.cd();
   hist->Draw();
   c.SaveAs("figures/raw_pt_dphi_q2.pdf");
 };
 
-void JEFW::DrawXYZ(const int lvl) {
+void JEFW::DrawXYZ(const int lvl)
+{
   TCanvas c("tmp","",800,600);
   
   c.cd();
   const char* name;
-  shared_ptr<TH1D> htmp;
+  TH1D* htmp;
   switch(lvl) { 
     case 0:
-      htmp = shared_ptr<TH1D>(hist->ProjectionX("_tmpX"));
+      htmp = hist->ProjectionX("_tmpX");
       name = "pt";
       break;
     case 1:
-      htmp = shared_ptr<TH1D>(hist->ProjectionY("_tmpY"));
+      htmp = hist->ProjectionY("_tmpY");
       name = "dPhi";
       break;
     case 2:
-      htmp = shared_ptr<TH1D>(hist->ProjectionZ("_tmpZ"));
+      htmp = hist->ProjectionZ("_tmpZ");
       name = "q2";
       break;
   }
@@ -79,17 +84,18 @@ void JEFW::DrawXYZ(const int lvl) {
   c.SaveAs(Form("figures/%s.pdf",name));
 };
 
-int JEFW::PlaneState(const float &dPhi) {
-
-  if ( TMath::Abs(TMath::Cos(dPhi)) <= TMath::Sqrt(2)/2.0 ) return 0; // in plane
-  if ( TMath::Abs(TMath::Cos(dPhi)) > TMath::Sqrt(2)/2.0 ) return 1; // out of plane
+int JEFW::PlaneState(const float &dPhi) 
+{
+  if ( TMath::Abs(TMath::Cos(dPhi)) <= TMath::Sqrt(2)/2.0 ) return 0; // in plane 30 * TMath::Pi()/180
+  if ( TMath::Abs(TMath::Cos(dPhi)) > TMath::Sqrt(2)/2.0 ) return 1; // out of plane 60 * TMath::Pi()/180
   return -1;
 };
 
-void JEFW::SeparatePlanes(std::vector<int> vec_q2limits) {
-  unique_ptr<TH3F> hTMP = unique_ptr<TH3F>(reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1)))));
+auto JEFW::SeparatePlanes(std::vector<int> vec_q2limits) 
+{
+  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
   hTMP->GetZaxis()->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
-  unique_ptr<TH1> h = unique_ptr<TH1>(reinterpret_cast<TH1*>(hTMP->Project3D("yx")));
+  TH1* h = reinterpret_cast<TH1*>(hTMP->Project3D("yx"));
 
   
   TObjArray* hv_pt = new TObjArray();
@@ -121,15 +127,70 @@ void JEFW::SeparatePlanes(std::vector<int> vec_q2limits) {
     hL->Add(tmpH);
   }
   
-  hv_pt->SaveAs(Form("root_files/SeparatePtPlane_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
-  delete hv_pt;
+  return hv_pt;
+  // hv_pt->SaveAs(Form("root_files/SeparatePtPlane_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
+  // delete hv_pt;
 };
 
-void JEFW::AziIntEse(std::vector<int> vec_q2limits) {
-  unique_ptr<TH3F> hTMP = unique_ptr<TH3F>(reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1)))));
-  unique_ptr<TH2F> h_ptq2 = unique_ptr<TH2F>(reinterpret_cast<TH2F*>(hTMP->Project3D("zx")));
+TH1* JEFW::AziIntEse(std::vector<int> vec_q2limits)
+{
+  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  TH2F* h_ptq2 = reinterpret_cast<TH2F*>(hTMP->Project3D("zx"));
 
-  auto h_out = h_ptq2->ProjectionX(Form("pt_q2_%i_%i",vec_q2limits.at(0),vec_q2limits.at(1)),vec_q2limits.at(0),vec_q2limits.at(1));
+  TH1* h_out = h_ptq2->ProjectionX(Form("pt_q2_%i_%i",vec_q2limits.at(0),vec_q2limits.at(1)),vec_q2limits.at(0),vec_q2limits.at(1));
 
-  h_out->SaveAs(Form("root_files/pt_dphiInt_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
+  return h_out;
 };
+
+TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C)
+{
+
+  const char* nameAC = Form("hCosPsi2%sm%s", A.c_str(), C.c_str());
+  const char* nameAB = Form("hCosPsi2%sm%s", A.c_str(), B.c_str());
+  const char* nameBC = Form("hCosPsi2%sm%s", B.c_str(), C.c_str());
+
+
+  TH3F* hAC = reinterpret_cast<TH3F*>(dir->Get(nameAC));
+  TH3F* hAB = reinterpret_cast<TH3F*>(dir->Get(nameAB));
+  TH3F* hBC = reinterpret_cast<TH3F*>(dir->Get(nameBC));
+
+  /* centrality, cos(2 (psiN - psiM)), q2PERC */
+  TH2D* hAC_centInt = dynamic_cast<TH2D*>(hAC->Project3D("yz"));
+  TH2D* hAB_centInt = dynamic_cast<TH2D*>(hAB->Project3D("yz"));
+  TH2D* hBC_centInt = dynamic_cast<TH2D*>(hBC->Project3D("yz"));
+
+  TProfile *pAC = hAC_centInt->ProfileX();
+  TProfile *pAB = hAB_centInt->ProfileX();
+  TProfile *pBC = hBC_centInt->ProfileX();
+
+  TH1F* hOut = new TH1F(Form("h%s%s%s",A.c_str(),B.c_str(),C.c_str()),";#it{q}_{2}; R_{2}",100,0,100);
+
+  for (int i{0}; i< pAC->GetNbinsX(); i++)
+  {
+    double A = pAC->GetBinContent(i);
+    double B = pAB->GetBinContent(i);
+    double C = pBC->GetBinContent(i);
+    double sigmaA = pAC->GetBinError(i);
+    double sigmaB = pAB->GetBinError(i);
+    double sigmaC = pBC->GetBinError(i);
+
+    double val = TMath::Sqrt(A * B / C);
+    double termA = (B / (A * C)) * sigmaA;
+    double termB = (A / (B * C)) * sigmaB;
+    double termC = (A * B / (C * C * C)) * sigmaC;
+    double error = 0.5 * TMath::Sqrt(termA * termA + termB * termB + termC * termC);
+
+    hOut->SetBinContent(i,val);
+    hOut->SetBinError(i,error);
+  }
+  
+  return hOut;
+};
+
+TH1* JEFW::getEventPlane(const char* name)
+{
+  TH2F* h = reinterpret_cast<TH2F*>(dir->Get(Form("hPsi2%s",name)));
+  TH1* hOut = h->ProjectionY(Form("psi2_%s",name));
+  return hOut;
+};
+

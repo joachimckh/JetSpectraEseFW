@@ -1,13 +1,13 @@
 
-#include "Core/JEFW.h"
-#include "Core/JEfficiency.h"
+#include "../Core/JEFW.h"
+#include "../Core/JEfficiency.h"
 
 #include <memory>
 
 
 using std::unique_ptr;
 
-void procc_mc(){
+void mc_procc(){
 
   // unique_ptr<JEFW> jet{new JEFW("../../jetSpectraESE/AnalysisResults.root")};
   unique_ptr<JEFW> jet{new JEFW("/Users/joachimcarlokristianhansen/jet_analysis/localr/loca_merge/train_278523_sub_jet/AnalysisResults.root")};
