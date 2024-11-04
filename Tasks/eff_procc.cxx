@@ -25,7 +25,6 @@ void eff_procc(){
   hmatched->Divide(htruth);
 
   
-  // TH1* hmatched = hmatched2->Rebin(2);
 
   TCanvas c2("c2","",800,600);
   c2.cd();
@@ -45,6 +44,13 @@ void eff_procc(){
   TLine *line = new TLine(0, 1, 200, 1);
   line->SetLineStyle(2);
   line->Draw();
+
+  // TLatex latex;
+  // latex.SetTextSize(0.04);  
+  // latex.DrawLatex(60, 0.3, "LHC24g3");
+  auto leg = new TLegend(0.6,0.2,0.8,0.4);
+  leg->AddEntry(hmatched,"LHC24g3","l");
+  leg->Draw();
 
   c2.SaveAs("figures/efficiency.pdf");
 

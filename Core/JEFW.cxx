@@ -174,11 +174,11 @@ TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C)
     double sigmaB = pAB->GetBinError(i);
     double sigmaC = pBC->GetBinError(i);
 
-    double val = TMath::Sqrt(A * B / C);
+    double val = std::sqrt(A * B / C);
     double termA = (B / (A * C)) * sigmaA;
     double termB = (A / (B * C)) * sigmaB;
     double termC = (A * B / (C * C * C)) * sigmaC;
-    double error = 0.5 * TMath::Sqrt(termA * termA + termB * termB + termC * termC);
+    double error = 0.5 * std::sqrt(termA * termA + termB * termB + termC * termC);
 
     hOut->SetBinContent(i,val);
     hOut->SetBinError(i,error);

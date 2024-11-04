@@ -6,7 +6,9 @@ using std::unique_ptr;
 
 void unfold_procc(){
   // data
-  const char* DATArun = "286287";
+  const char* DATArun = "286287"; /* R=0.4 */
+  // const char* DATArun = "286533"; /* R=0.2 */
+  const char* Rval = "0.4";
   unique_ptr<JEFW> jet{new JEFW(Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",DATArun))};
   jet->Init("data");
   int q2Min = 70;
@@ -47,7 +49,7 @@ void unfold_procc(){
     hist->SetLineColor(kBlack);
 
     hist->GetXaxis()->SetRangeUser(10,120);
-    Double_t scale1 = hist->GetXaxis()->GetBinWidth(1)/(hist->Integral());
+    Double_t scale1 = 1.0/(hist->Integral());
     hist->Scale(scale1);
     hist->Draw();
 
@@ -56,12 +58,12 @@ void unfold_procc(){
 
 
     hReco->SetLineColor(kGreen);
-    Double_t scale2 = hReco->GetXaxis()->GetBinWidth(1)/(hReco->Integral());
+    Double_t scale2 = 1.0/(hReco->Integral());
     hReco->Scale(scale2);
     hReco->Draw("same");
 
     htrue->SetLineColor(kRed);
-    Double_t scale3 = htrue->GetXaxis()->GetBinWidth(1)/(htrue->Integral());
+    Double_t scale3 = 1.0/(htrue->Integral());
     htrue->Scale(scale3);
     htrue->Draw("same");
 
@@ -75,7 +77,7 @@ void unfold_procc(){
     leg->SetBorderSize(0);
     leg->Draw();
 
-    c2.SaveAs(Form("figures/unfold_response_%i.pdf",i));
+    c2.SaveAs(Form("figures/unfold_response_%i_%s.pdf",i,Rval));
 
     hReco->SetName(Form("hv_%i",i));
     SepPlanes->Add(hReco);
@@ -84,6 +86,6 @@ void unfold_procc(){
 
   
 
-  SepPlanes->SaveAs(Form("root_files/unfolded_q2_%i_%i.root",q2.at(0),q2.at(1)));
+  SepPlanes->SaveAs(Form("root_files/unfolded_q2_%i_%i_R%s.root",q2.at(0),q2.at(1),Rval));
 
 }

@@ -40,7 +40,7 @@ TH1* JEUtility::calculateV2Jet()
     double val = (denom!=0) ? num/denom : 0;
     
     double v2 = cst * R2inv * val;
-    double error = (denom!=0) ? cst * R2inv * 2 / (denom * denom) * TMath::Sqrt(B * B * sigmaA * sigmaA + A * A * sigmaB * sigmaB) : 0;
+    double error = (denom!=0) ? cst * R2inv * 2 / (denom * denom) * std::sqrt(B * B * sigmaA * sigmaA + A * A * sigmaB * sigmaB) : 0;
 
     hReturn->SetBinContent(i, v2);
     hReturn->SetBinError(i, error);
@@ -57,7 +57,7 @@ void JEUtility::JERebin(int n, Double_t* bin_edges)
   h_out = reinterpret_cast<TH1F*>(h_out->Rebin(n, "hOutReb", bin_edges));
 };
 
-std::tuple<TH1*, TH1*> JEUtility::YieldCorrectedJet()
+std::pair<TH1*, TH1*> JEUtility::YieldCorrectedJet()
 {
   /* 
     N_in^Corr = N_in + N_out / (1 + N_out^Corr/N_in^Corr) 
@@ -68,13 +68,13 @@ std::tuple<TH1*, TH1*> JEUtility::YieldCorrectedJet()
   TH1* h_out_Corr = reinterpret_cast<TH1*>(h_out->Clone("hYieldCorrectedJet_out"));
   for (int i{1}; i < h_in->GetNbinsX()+1; i++)
   {
-    float num = h_in->GetBinContent(i) + h_out->GetBinContent(i);
+    double num = h_in->GetBinContent(i) + h_out->GetBinContent(i);
 
 
-    float denum_in = 1.0 + h_rat->GetBinContent(i);
-    float denum_out = 1.0 + 1.0/h_rat->GetBinContent(i);
-    float val_in = (denum_in!=0) ? num/denum_in : 0;
-    float val_out = (denum_out!=0) ? num/denum_out : 0;
+    double denum_in = 1.0 + h_rat->GetBinContent(i);
+    double denum_out = 1.0 + 1.0/h_rat->GetBinContent(i);
+    double val_in = (denum_in!=0) ? num/denum_in : 0;
+    double val_out = (denum_out!=0) ? num/denum_out : 0;
 
     h_in_Corr->SetBinContent(i, val_in);
     h_in_Corr->SetBinError(i, h_in->GetBinError(i));
@@ -83,7 +83,7 @@ std::tuple<TH1*, TH1*> JEUtility::YieldCorrectedJet()
   }
 
 
-  return std::make_tuple(h_in_Corr, h_out_Corr);
+  return std::make_pair(h_in_Corr, h_out_Corr);
 }
 TH1* JEUtility::YieldRatio()
 { 
@@ -92,9 +92,9 @@ TH1* JEUtility::YieldRatio()
   TH1 *hRatio = reinterpret_cast<TH1*>(hV2->Clone("hRatio"));
   for (int i{1}; i < hV2->GetNbinsX()+1; i++)
   {
-    float num = 2 * std::numbers::pi - 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
-    float denum = 2 * std::numbers::pi + 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
-    float val = (denum!=0) ? num/denum : 0;
+    double num = 2 * std::numbers::pi - 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
+    double denum = 2 * std::numbers::pi + 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);
+    double val = (denum!=0) ? num/denum : 0;
     hRatio->SetBinContent(i, val);
   }
   return hRatio;
