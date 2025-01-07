@@ -4,10 +4,10 @@
 /// \author Joachim C. K. B. Hansen
 
 
-#include "JEfficiency.h"
+#include "JEfficiency.hpp"
 
-#include "RooUnfoldResponse.h"
-#include "RooUnfoldBayes.h"
+#include <RooUnfoldResponse.h>
+#include <RooUnfoldBayes.h>
 
 ClassImp(JEfficiency);
 

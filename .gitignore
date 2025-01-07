@@ -43,3 +43,6 @@ figures
 
 .vscode
 *.DS_Store
+
+# CMake
+build/

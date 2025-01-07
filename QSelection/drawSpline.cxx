@@ -6,22 +6,30 @@
 void drawSpline(){
 
 
-  TFile* f = new TFile("TestWeights.root", "READ");
+  TFile* f = new TFile("Weights_LHC23zzh_pass4_small_Calib4_FT0C.root", "READ");
 
   FFitWeights *w = reinterpret_cast<FFitWeights*>(f->Get("ccdb_object"));
   w->ls();
 
 
-  TSpline* sp = reinterpret_cast<TSpline3*>(w->GetDataArray()->At(10));
-  TSpline* sp2 = reinterpret_cast<TSpline3*>(w->GetDataArray()->At(30));
+  auto sp = reinterpret_cast<TGraph*>(w->getDataArray()->At(9));
+
+  float x{700.2};
+  auto y{sp->Eval(x)};
+  TGraph *gr = new TGraph();
+  gr->SetPoint(0, x, y);
+
 
   TCanvas *c = new TCanvas("c", "c", 800, 800);
   c->cd();
-
+  sp->SetLineColor(kBlack);
   sp->Draw();
 
-  sp2->SetLineColor(kRed);
-  sp2->Draw("same");
+  gr->SetMarkerStyle(20);
+  gr->SetMarkerSize(1.5);
+  gr->SetMarkerColor(kRed);
+  gr->Draw("Psame");
+  
 
   c->SaveAs("spline.png");
 }

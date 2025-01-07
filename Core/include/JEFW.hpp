@@ -12,13 +12,14 @@
 #include <algorithm>
 #include <memory>
 
-#include "TObjArray.h"
-#include "TH3D.h"
-#include "TH2D.h"
-#include "TH1D.h"
-#include "TFile.h"
-#include "TMath.h"
-
+#include <TObjArray.h>
+#include <TH3D.h>
+#include <TH2D.h>
+#include <TH1D.h>
+#include <TFile.h>
+#include <TMath.h>
+#include <TProfile.h>
+#include <TCanvas.h>
 
 using std::shared_ptr;
 using std::unique_ptr;
@@ -38,7 +39,7 @@ class JEFW {
     void DrawXYZ(const int lvl);
 
     int PlaneState(const float &dPhi);
-    auto SeparatePlanes(std::vector<int> vec_q2limits);
+    TObjArray* SeparatePlanes(std::vector<int> vec_q2limits);
     TH1* AziIntEse(std::vector<int> vec_q2limits);
 
     TH3F* GetHist() const {
@@ -59,8 +60,10 @@ class JEFW {
       return hist_mc;
     };
 
-    TH1F* eventPlaneResolution(std::string A, std::string B, std::string C);
-    TH1* getEventPlane(const char* name);
+    TH1F* eventPlaneResolution(std::string A, std::string B, std::string C, std::pair<int,int> cent);
+    TH1* getEventPlane(const char* name, std::pair<int,int> cent);
+    TH1* getR2S(const char* name, std::pair<int,int> cent);
+    std::vector<TH1*> InclusiveEPR(std::string A, std::string B, std::string C);
 
     void JERebin(int n, Double_t* bin_edges);
 
@@ -77,6 +80,7 @@ class JEFW {
 
 
     DataType getDataType(const std::string& type) const;
+    std::pair<double, double> GetEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i);
    
   ClassDef(JEFW, 1); // jet fw class
 

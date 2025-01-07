@@ -3,7 +3,7 @@
 ///
 /// \author Joachim C. K. B. Hansen
 
-#include "JEFW.h"
+#include "JEFW.hpp"
 
 ClassImp(JEFW);
 
@@ -26,6 +26,26 @@ JEFW::DataType JEFW::getDataType(const std::string& type) const
   } else {
     throw std::invalid_argument("Invalid data type");
   }
+}
+
+std::pair<double, double> JEFW::GetEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i)
+{
+  double A = pAC->GetBinContent(i);
+  double B = pAB->GetBinContent(i);
+  double C = pBC->GetBinContent(i);
+  double sigmaA = pAC->GetBinError(i);
+  double sigmaB = pAB->GetBinError(i);
+  double sigmaC = pBC->GetBinError(i);
+
+  double val = std::sqrt(A * B / C);
+  double termA = (B / (A * C)) * sigmaA;
+  double termB = (A / (B * C)) * sigmaB;
+  double termC = (A * B / (C * C * C)) * sigmaC;
+
+  double insqrt = termA * termA + termB * termB + termC * termC;
+  double error = 0.5 * std::sqrt(insqrt);
+
+  return std::make_pair(val,error);
 }
 
 void JEFW::Init(std::string type)
@@ -91,7 +111,7 @@ int JEFW::PlaneState(const float &dPhi)
   return -1;
 };
 
-auto JEFW::SeparatePlanes(std::vector<int> vec_q2limits) 
+TObjArray* JEFW::SeparatePlanes(std::vector<int> vec_q2limits) 
 {
   TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
   hTMP->GetZaxis()->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
@@ -142,7 +162,7 @@ TH1* JEFW::AziIntEse(std::vector<int> vec_q2limits)
   return h_out;
 };
 
-TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C)
+TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C, std::pair<int,int> cent)
 {
 
   const char* nameAC = Form("hCosPsi2%sm%s", A.c_str(), C.c_str());
@@ -154,49 +174,93 @@ TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C)
   TH3F* hAB = reinterpret_cast<TH3F*>(dir->Get(nameAB));
   TH3F* hBC = reinterpret_cast<TH3F*>(dir->Get(nameBC));
 
+  hAC->GetXaxis()->SetRange(cent.first,cent.second);
+  hAB->GetXaxis()->SetRange(cent.first,cent.second);
+  hBC->GetXaxis()->SetRange(cent.first,cent.second);
+
   /* centrality, cos(2 (psiN - psiM)), q2PERC */
   TH2D* hAC_centInt = dynamic_cast<TH2D*>(hAC->Project3D("yz"));
   TH2D* hAB_centInt = dynamic_cast<TH2D*>(hAB->Project3D("yz"));
   TH2D* hBC_centInt = dynamic_cast<TH2D*>(hBC->Project3D("yz"));
 
-  TProfile *pAC = hAC_centInt->ProfileX();
-  TProfile *pAB = hAB_centInt->ProfileX();
-  TProfile *pBC = hBC_centInt->ProfileX();
+  hAC->GetXaxis()->SetRange(0, 0);
+  hAB->GetXaxis()->SetRange(0, 0);
+  hBC->GetXaxis()->SetRange(0, 0);
+
+  TProfile *pAC = dynamic_cast<TProfile*>(hAC_centInt->ProfileX());
+  TProfile *pAB = dynamic_cast<TProfile*>(hAB_centInt->ProfileX());
+  TProfile *pBC = dynamic_cast<TProfile*>(hBC_centInt->ProfileX());
 
   TH1F* hOut = new TH1F(Form("h%s%s%s",A.c_str(),B.c_str(),C.c_str()),";#it{q}_{2}; R_{2}",100,0,100);
 
-  for (int i{0}; i< pAC->GetNbinsX(); i++)
+  for (int i{1}; i< pAC->GetNbinsX()+1; i++)
   {
-    double A = pAC->GetBinContent(i);
-    double B = pAB->GetBinContent(i);
-    double C = pBC->GetBinContent(i);
-    double sigmaA = pAC->GetBinError(i);
-    double sigmaB = pAB->GetBinError(i);
-    double sigmaC = pBC->GetBinError(i);
+    auto [val, error] = GetEPR3Val(pAC,pAB,pBC,i);
 
-    double val = std::sqrt(A * B / C);
-    double termA = (B / (A * C)) * sigmaA;
-    double termB = (A / (B * C)) * sigmaB;
-    double termC = (A * B / (C * C * C)) * sigmaC;
-    double error = 0.5 * std::sqrt(termA * termA + termB * termB + termC * termC);
-
+    if (val > 3 || val < 0) continue;
+    
     hOut->SetBinContent(i,val);
     hOut->SetBinError(i,error);
   }
-  
   return hOut;
 };
 
-TH1* JEFW::getEventPlane(const char* name)
+TH1* JEFW::getEventPlane(const char* name, std::pair<int,int> cent)
 {
   TH2F* h = reinterpret_cast<TH2F*>(dir->Get(Form("hPsi2%s",name)));
-  TH1* hOut = h->ProjectionY(Form("psi2_%s",name));
+  TH1* hOut = h->ProjectionY(Form("psi2_%s",name),cent.first,cent.second);
   return hOut;
 };
+
+TH1* JEFW::getR2S(const char* name, std::pair<int,int> cent)
+{
+  TH3F* h = reinterpret_cast<TH3F*>(dir->Get(Form("hCosPsi2%s",name)));
+  // h->GetXaxis()->SetRange(cent.first,cent.second);
+  TH1* hOut = h->ProjectionY(Form("PROJhCosPsi2%s",name),cent.first,cent.second);
+  return hOut;
+}
 
 void JEFW::JERebin(int n, Double_t* bin_edges)
 {
   /* rebin */
   hmatched = reinterpret_cast<TH1F*>(hmatched->Rebin(n, "hMatchedReb", bin_edges));
   htruth = reinterpret_cast<TH1F*>(htruth->Rebin(n, "hTruthReb", bin_edges));
+};
+
+std::vector<TH1*> JEFW::InclusiveEPR(std::string A, std::string B, std::string C)
+{
+  const char* nameAC = Form("hCosPsi2%sm%s", A.c_str(), C.c_str());
+  const char* nameAB = Form("hCosPsi2%sm%s", A.c_str(), B.c_str());
+  const char* nameBC = Form("hCosPsi2%sm%s", B.c_str(), C.c_str());
+
+
+  TH3F* hAC = reinterpret_cast<TH3F*>(dir->Get(nameAC));
+  TH3F* hAB = reinterpret_cast<TH3F*>(dir->Get(nameAB));
+  TH3F* hBC = reinterpret_cast<TH3F*>(dir->Get(nameBC));
+
+  auto hAC2 = reinterpret_cast<TH2*>(hAC->Project3D("yx"));
+  auto hAB2 = reinterpret_cast<TH2*>(hAB->Project3D("yx"));
+  auto hBC2 = reinterpret_cast<TH2*>(hBC->Project3D("yx"));
+
+  TProfile *pAC = dynamic_cast<TProfile*>(hAC2->ProfileX());
+  TProfile *pAB = dynamic_cast<TProfile*>(hAB2->ProfileX());
+  TProfile *pBC = dynamic_cast<TProfile*>(hBC2->ProfileX());
+
+  TH1F* hCombined = new TH1F(Form("INCh%s%s%s",A.c_str(),B.c_str(),C.c_str()),";Centrality; R_{2}",100,0,100);
+  for (int i{1}; i< pAC->GetNbinsX()+1; i++)
+  {
+    auto [val, error] = GetEPR3Val(pAC,pAB,pBC,i);
+
+    if (val > 3 || val < 0) continue;
+    
+    hCombined->SetBinContent(i,val);
+    hCombined->SetBinError(i,error);
+  }
+
+  std::vector<TH1*> vec;
+  vec.push_back(hCombined);
+  vec.push_back(pAC);
+  vec.push_back(pAB);
+  vec.push_back(pBC);
+  return vec;
 };

@@ -3,7 +3,7 @@
 ///
 /// \author Joachim C. K. B. Hansen
 
-#include "JEUtility.h"
+#include "JEUtility.hpp"
 
 #include <utility>
 

@@ -1,17 +1,26 @@
 
-#include "../Core/JEFW.h"
-#include "../Core/JEfficiency.h"
+#include "JEFW.hpp"
+#include "JEfficiency.hpp"
 
 #include <memory>
+#include <iostream>
 
+#include <TFile.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TLine.h>
+#include <TLegend.h>
 
 using std::unique_ptr;
 
 
 
-void eff_procc(){
+int main(int argc, char *argv[]) {
 
-  const char* run = "284907";
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <run number>" << std::endl;
+  }
+  const char* run = argv[1];
   unique_ptr<JEFW> mcjet{new JEFW(Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC24g3/jet/%s/AnalysisResults.root",run))};
   mcjet->Init("mc");
   int n = 16;
@@ -54,4 +63,6 @@ void eff_procc(){
 
   c2.SaveAs("figures/efficiency.pdf");
 
+
+  return 0;
 }
