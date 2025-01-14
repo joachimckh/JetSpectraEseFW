@@ -3,8 +3,7 @@
 ///
 /// \author Joachim C. K. B. Hansen
 
-#ifndef CORE_JEUtility_H_
-#define CORE_JEUtility_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -44,5 +43,3 @@ class JEUtility {
   ClassDef(JEUtility, 1); // jet utility fw class
 
 };
-
-#endif // CORE_JEUtility_H_

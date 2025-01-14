@@ -18,3 +18,4 @@ link_directories(${HOME_DIR}/alisw/sw/osx_arm64/RooUnfold/latest-o2/lib)
 
 add_subdirectory(Core)
 add_subdirectory(Tasks)
+add_subdirectory(JAnalysis)

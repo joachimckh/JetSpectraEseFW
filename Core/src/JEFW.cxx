@@ -28,7 +28,7 @@ JEFW::DataType JEFW::getDataType(const std::string& type) const
   }
 }
 
-std::pair<double, double> JEFW::GetEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i)
+std::pair<double, double> JEFW::getEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i)
 {
   double A = pAC->GetBinContent(i);
   double B = pAB->GetBinContent(i);
@@ -55,8 +55,12 @@ void JEFW::Init(std::string type)
   
   switch (getDataType(type)) {
     case DATA:
-      hist = reinterpret_cast<TH3F*>(dir->Get("jet_pt_dPhi_q2;1")); /* hJetPtdPhiq2 */
-      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("h_jet_pt_bkgsub")); /* hJetPt_bkgsub */
+      hist = dynamic_cast<THnSparse*>(dir->Get("hCentJetPtdPhiq2;1;1")); /* hJetPtdPhiq2 old */
+      if (!hist) {
+        std::cerr << "could not find the thnsparse" << std::endl;
+        return;
+      }
+      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("hJetPt_bkgsub")); /* hJetPt_bkgsub old */
 
       break;
     case MC:
@@ -68,7 +72,7 @@ void JEFW::Init(std::string type)
   
 };
 
-void JEFW::DrawRaw() const
+void JEFW::drawRaw() const
 {
   TCanvas c("tmp","",800,600);
   c.cd();
@@ -76,7 +80,7 @@ void JEFW::DrawRaw() const
   c.SaveAs("figures/raw_pt_dphi_q2.pdf");
 };
 
-void JEFW::DrawXYZ(const int lvl)
+void JEFW::drawXYZ(const int lvl)
 {
   TCanvas c("tmp","",800,600);
   
@@ -85,15 +89,15 @@ void JEFW::DrawXYZ(const int lvl)
   TH1D* htmp;
   switch(lvl) { 
     case 0:
-      htmp = hist->ProjectionX("_tmpX");
+      htmp = hist->Projection(1);
       name = "pt";
       break;
     case 1:
-      htmp = hist->ProjectionY("_tmpY");
+      htmp = hist->Projection(2);
       name = "dPhi";
       break;
     case 2:
-      htmp = hist->ProjectionZ("_tmpZ");
+      htmp = hist->Projection(3);
       name = "q2";
       break;
   }
@@ -104,16 +108,22 @@ void JEFW::DrawXYZ(const int lvl)
   c.SaveAs(Form("figures/%s.pdf",name));
 };
 
-int JEFW::PlaneState(const float &dPhi) 
+int JEFW::planeState(const float &dPhi) 
 {
   if ( TMath::Abs(TMath::Cos(dPhi)) <= TMath::Sqrt(2)/2.0 ) return 0; // in plane 30 * TMath::Pi()/180
   if ( TMath::Abs(TMath::Cos(dPhi)) > TMath::Sqrt(2)/2.0 ) return 1; // out of plane 60 * TMath::Pi()/180
   return -1;
 };
 
-TObjArray* JEFW::SeparatePlanes(std::vector<int> vec_q2limits) 
+void JEFW::setCentrality(const std::vector<int> vec_centlimits)
 {
-  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  hist->GetAxis(0)->SetRange(vec_centlimits.at(0),vec_centlimits.at(1));
+};
+
+TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits) 
+{
+  // TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Projection(1 /* jet pT */,2 /* Delta Phi */,3 /* q2 */)->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
   hTMP->GetZaxis()->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
   TH1* h = reinterpret_cast<TH1*>(hTMP->Project3D("yx"));
 
@@ -134,7 +144,7 @@ TObjArray* JEFW::SeparatePlanes(std::vector<int> vec_q2limits)
   std::vector<int> fKeep;
   for (int i{1}; i<ax2->GetNbins()+1; i++) {
     float dphi = projPhi->GetBinContent(i);
-    int vPlane = this->PlaneState(dphi);
+    int vPlane = this->planeState(dphi);
     fKeep.push_back(vPlane);
 
     if (vPlane<0) continue;
@@ -143,7 +153,7 @@ TObjArray* JEFW::SeparatePlanes(std::vector<int> vec_q2limits)
       printf("could not find histogram");
       continue;
     }
-    auto tmpH = reinterpret_cast<TH1D*>(hist->ProjectionX(Form("_tmpPTXjet%i",i),i,i,vec_q2limits.at(0),vec_q2limits.at(1)));
+    auto tmpH = reinterpret_cast<TH1D*>(hTMP->ProjectionX(Form("_tmpPTXjet%i",i),i,i,vec_q2limits.at(0),vec_q2limits.at(1)));
     hL->Add(tmpH);
   }
   
@@ -152,7 +162,7 @@ TObjArray* JEFW::SeparatePlanes(std::vector<int> vec_q2limits)
   // delete hv_pt;
 };
 
-TH1* JEFW::AziIntEse(std::vector<int> vec_q2limits)
+TH1* JEFW::aziIntEse(std::vector<int> vec_q2limits)
 {
   TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
   TH2F* h_ptq2 = reinterpret_cast<TH2F*>(hTMP->Project3D("zx"));
@@ -195,7 +205,7 @@ TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C, st
 
   for (int i{1}; i< pAC->GetNbinsX()+1; i++)
   {
-    auto [val, error] = GetEPR3Val(pAC,pAB,pBC,i);
+    auto [val, error] = getEPR3Val(pAC,pAB,pBC,i);
 
     if (val > 3 || val < 0) continue;
     
@@ -227,7 +237,7 @@ void JEFW::JERebin(int n, Double_t* bin_edges)
   htruth = reinterpret_cast<TH1F*>(htruth->Rebin(n, "hTruthReb", bin_edges));
 };
 
-std::vector<TH1*> JEFW::InclusiveEPR(std::string A, std::string B, std::string C)
+std::vector<TH1*> JEFW::inclusiveEPR(std::string A, std::string B, std::string C)
 {
   const char* nameAC = Form("hCosPsi2%sm%s", A.c_str(), C.c_str());
   const char* nameAB = Form("hCosPsi2%sm%s", A.c_str(), B.c_str());
@@ -249,7 +259,7 @@ std::vector<TH1*> JEFW::InclusiveEPR(std::string A, std::string B, std::string C
   TH1F* hCombined = new TH1F(Form("INCh%s%s%s",A.c_str(),B.c_str(),C.c_str()),";Centrality; R_{2}",100,0,100);
   for (int i{1}; i< pAC->GetNbinsX()+1; i++)
   {
-    auto [val, error] = GetEPR3Val(pAC,pAB,pBC,i);
+    auto [val, error] = getEPR3Val(pAC,pAB,pBC,i);
 
     if (val > 3 || val < 0) continue;
     

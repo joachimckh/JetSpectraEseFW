@@ -3,8 +3,7 @@
 ///
 /// \author Joachim C. K. B. Hansen
 
-#ifndef CORE_JEfficiency_H_
-#define CORE_JEfficiency_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -45,7 +44,4 @@ class JEfficiency {
   ClassDef(JEfficiency, 1); // jet unfolding class
 
 };
-
-
-#endif // CORE_JEfficiency_H_
 

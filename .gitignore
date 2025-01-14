@@ -46,3 +46,7 @@ figures
 
 # CMake
 build/
+
+# old
+legacy/
+Plot/

@@ -3,14 +3,14 @@
 ///
 /// \author Joachim C. K. B. Hansen
 
-#ifndef CORE_JEFW_H_
-#define CORE_JEFW_H_
+#pragma once
 
 #include <vector>
 #include <string>
 #include <utility>
 #include <algorithm>
 #include <memory>
+#include <iostream>
 
 #include <TObjArray.h>
 #include <TH3D.h>
@@ -20,6 +20,7 @@
 #include <TMath.h>
 #include <TProfile.h>
 #include <TCanvas.h>
+#include <THnSparse.h>
 
 using std::shared_ptr;
 using std::unique_ptr;
@@ -35,17 +36,18 @@ class JEFW {
     ~JEFW();
 
     void Init(std::string type);
-    void DrawRaw() const;
-    void DrawXYZ(const int lvl);
+    void drawRaw() const;
+    void drawXYZ(const int lvl);
 
-    int PlaneState(const float &dPhi);
-    TObjArray* SeparatePlanes(std::vector<int> vec_q2limits);
-    TH1* AziIntEse(std::vector<int> vec_q2limits);
+    int planeState(const float &dPhi);
+    void setCentrality(const std::vector<int> vec_centlimits);
+    TObjArray* separatePlanes(std::vector<int> vec_q2limits);
+    TH1* aziIntEse(std::vector<int> vec_q2limits);
 
-    TH3F* GetHist() const {
+    THnSparse* getHist() const {
       return hist;
     };
-    TH1F* GetHistPt(const int i) const {
+    TH1F* getHistPt(const int i) const {
       switch (i) {
         case 0:
           return h_pt_bkg;
@@ -56,21 +58,21 @@ class JEFW {
       }
       return nullptr;
     };
-    TH2F* GetHistMC() const {
+    TH2F* getHistMC() const {
       return hist_mc;
     };
 
     TH1F* eventPlaneResolution(std::string A, std::string B, std::string C, std::pair<int,int> cent);
     TH1* getEventPlane(const char* name, std::pair<int,int> cent);
     TH1* getR2S(const char* name, std::pair<int,int> cent);
-    std::vector<TH1*> InclusiveEPR(std::string A, std::string B, std::string C);
+    std::vector<TH1*> inclusiveEPR(std::string A, std::string B, std::string C);
 
     void JERebin(int n, Double_t* bin_edges);
 
   private:
     unique_ptr<TFile> inFile;
     const char* path;
-    TH3F* hist;
+    THnSparse* hist;
     TH2F* hist_mc;
     TH1F* h_pt_bkg;
     TH1F* htruth;
@@ -80,10 +82,8 @@ class JEFW {
 
 
     DataType getDataType(const std::string& type) const;
-    std::pair<double, double> GetEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i);
+    std::pair<double, double> getEPR3Val(TProfile* pAC, TProfile* pAB, TProfile* pBC, int i);
    
   ClassDef(JEFW, 1); // jet fw class
 
 };
-
-#endif // CORE_JEFW_H_

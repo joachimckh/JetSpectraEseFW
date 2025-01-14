@@ -16,7 +16,6 @@ using std::unique_ptr;
 
 
 int main(int argc, char *argv[]) {
-
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <run number>" << std::endl;
   }
@@ -26,8 +25,8 @@ int main(int argc, char *argv[]) {
   int n = 16;
   Double_t bin_edges[17]={0,5,10,15,20,25,30,40,50,60,70,80,90,100,120,160,200};
   mcjet->JERebin(n, bin_edges);
-  auto hmatched = mcjet->GetHistPt(2);
-  auto htruth = mcjet->GetHistPt(1);
+  auto hmatched = mcjet->getHistPt(2);
+  auto htruth = mcjet->getHistPt(1);
 
 
   // divide mathced by truth to get efficiency

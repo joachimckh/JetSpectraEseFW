@@ -2,15 +2,19 @@
 #include "JEUtility.hpp"
 
 #include <memory>
+#include <iostream>
 
 #include <TFile.h>
 #include <TH1.h>
 
 using std::unique_ptr;
 
-int main(){
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <R value, 0.2,0.4>" << std::endl;
+  }
 
-  const char* Rval = "0.4";
+  const char* Rval = argv[2];// "0.4";
   // raw
   // TFile *f = new TFile("root_files/SeparatePtPlane_q2_1_100.root","READ");
 

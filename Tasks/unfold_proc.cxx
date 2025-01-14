@@ -3,6 +3,7 @@
 
 
 #include <memory>
+#include <iostream>
 
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -10,29 +11,33 @@
 
 using std::unique_ptr;
 
-int main(){
-  // data
-  const char* DATArun = "286287"; /* R=0.4 */
-  // const char* DATArun = "286533"; /* R=0.2 */
-  const char* Rval = "0.4";
+int main(int argc, char *argv[]){
+
+  if (argc < 3) {
+    std::cerr << "Usage: " << argv[0] << " <run number>" << std::endl;
+    std::cerr << "Usage: " << argv[1] << " <R>" << std::endl;
+    std::cerr << "Usage: " << argv[2] << " <mc run number>" << std::endl;
+  }
+  const char* DATArun = argv[1]; /* 286287, R=0.4 | 286533, R=0.2*/
+  const char* Rval = argv[2];
   unique_ptr<JEFW> jet{new JEFW(Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",DATArun))};
   jet->Init("data");
   int q2Min = 70;
   int q2Max = 100;
 
   std::vector<int> q2{q2Min,q2Max};
-  auto objarr = jet->SeparatePlanes(q2);
+  auto objarr = jet->separatePlanes(q2);
   // auto hist = reinterpret_cast<TH1F*>(objarr->FindObject("hv_1"));
   // auto hist = jet->GetHistPt(0);
 
   // mc
-  const char* MCrun = "284907";
+  const char* MCrun = argv[2];// "284907";
   unique_ptr<JEFW> mcjet{new JEFW(Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC24g3/jet/%s/AnalysisResults.root",MCrun))};
   mcjet->Init("mc");
-  auto resp = mcjet->GetHistMC();
+  auto resp = mcjet->getHistMC();
   // auto htrue = dynamic_cast<TH1D*>(resp->ProjectionY("htrue1")); /* true from response */
-  auto htrue = mcjet->GetHistPt(1); /* true from TRUE process function */
-  auto hmatched = mcjet->GetHistPt(2);
+  auto htrue = mcjet->getHistPt(1); /* true from TRUE process function */
+  auto hmatched = mcjet->getHistPt(2);
 
 
   // auto eff = jeff->Efficiency();
