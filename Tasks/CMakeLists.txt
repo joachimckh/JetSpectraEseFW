@@ -8,11 +8,6 @@ target_link_libraries(data-proc PRIVATE Core ${ROOT_LIBRARIES} RooUnfold)
 target_include_directories(data-proc PRIVATE 
                           ${CMAKE_SOURCE_DIR}/Core/include)
 
-add_executable(event-plate-res eventPlaneResolution.cxx)
-target_link_libraries(event-plate-res PRIVATE Core ${ROOT_LIBRARIES} RooUnfold)
-target_include_directories(event-plate-res PRIVATE 
-                          ${CMAKE_SOURCE_DIR}/Core/include)
-
 add_executable(unfold-proc unfold_proc.cxx)
 target_link_libraries(unfold-proc PRIVATE Core ${ROOT_LIBRARIES} RooUnfold)
 target_include_directories(unfold-proc PRIVATE 

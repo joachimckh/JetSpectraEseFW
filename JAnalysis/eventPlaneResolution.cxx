@@ -7,29 +7,31 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TLegend.h>
+#include <TFile.h>
 
+#include "rootStyle.hpp"
 
 int main(int argc, char *argv[]){
 
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <run number>" << std::endl;
+    std::cerr << "Usage: " << argv[1] << " <run number>" << std::endl;
+    std::cerr << "Usage: " << argv[2] << " <A>" << std::endl;
+    std::cerr << "Usage: " << argv[3] << " <B>" << std::endl;
+    std::cerr << "Usage: " << argv[4] << " <C>" << std::endl;
   }
-  // const char* run = "291684"; /* calib Q2 - REC */
-  // const char* run = argv[1];//"293170"; /* calib Q3 - TWIST */
-  // auto fin = Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",run);
 
-  auto fin = "/Users/joachimcarlokristianhansen/jet_analysis/localr/jetSpectraESE/AnalysisResults_0-1000Occu.root";
+  auto fin = Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",argv[1]);
+
   unique_ptr<JEFW> jet{new JEFW(fin)};
   jet->Init("data");
   std::pair<int,int> cent{30,50};
   TH1F* hFT0A = jet->eventPlaneResolution("A","B","C",cent);
-  // TH1F* hFT0C = jet->eventPlaneResolution("FT0C","FV0A","FT0A",cent);
-  // TH1F* hFV0A = jet->eventPlaneResolution("FV0A","FT0A","FT0C",cent);
-  // TH1F* hTPCPos = jet->eventPlaneResolution("TPCpos","TPCneg","FV0A",cent);
 
-  // "cfgEPRefA": "FT0A",
-  // "cfgEPRefB": "TPCpos",
-  // "cfgEPRefC": "TPCneg",
+  /*    Default case is (jetSpectraEseTask):
+          "cfgEPRefA": "FT0A",
+          "cfgEPRefB": "TPCpos",
+          "cfgEPRefC": "TPCneg"
+  */ 
 
   
   TH1* psiFT0A = jet->getEventPlane("FT0A",cent);
@@ -38,6 +40,14 @@ int main(int argc, char *argv[]){
   TH1* psiTPCpos = jet->getEventPlane("TPCpos",cent);
   TH1* psiTPCneg = jet->getEventPlane("TPCneg",cent);
 
+  const int nReb = 5;
+  psiFT0A = psiFT0A->Rebin(nReb);
+  psiFT0C = psiFT0C->Rebin(nReb);
+  psiFV0A = psiFV0A->Rebin(nReb);
+  psiTPCpos = psiTPCpos->Rebin(nReb);
+  psiTPCneg = psiTPCneg->Rebin(nReb);
+
+  rootStyle();
 
   TCanvas *c1 = new TCanvas("c1","c1",800,600);
 
@@ -46,47 +56,46 @@ int main(int argc, char *argv[]){
   hFT0A->GetYaxis()->SetRangeUser(0, 1);
   hFT0A->Draw("hist");
 
-  // hFT0C->SetLineColor(kRed);
-  // hFT0C->Draw("hist same");
-
-  // hFV0A->SetLineColor(kBlue);
-  // hFV0A->Draw("hist same");
-
-  // hTPCPos->SetLineColor(kGreen);
-  // hTPCPos->Draw("hist same");
 
   TLegend *leg = new TLegend(0.5,0.2,0.7,0.4);
   leg->AddEntry(hFT0A,"FT0A","l");
-  // leg->AddEntry(hFT0C,"FT0C","l");
-  // leg->AddEntry(hFV0A,"FV0A","l");
-  // leg->AddEntry(hTPCPos,"TPCPos","l");
 
   leg->Draw();
 
-  c1->SaveAs("figures/eventPlaneResolution.pdf");
+  TFile *res_out = new TFile(Form("processed_data/eventPlaneResolution-A-%s-B-%s-C-%s.root",argv[2],argv[3],argv[4]),"RECREATE"); 
+  hFT0A->Write();
+  res_out->Close();
+  double sum{0};
+  double weights{0};
+  for (int i{1}; i<hFT0A->GetNbinsX(); i++) {
+    sum += hFT0A->GetBinContent(i);
+    weights += 1;
+  }
+  std::cout << "Mean: " << sum/weights << std::endl;
+  c1->SaveAs(Form("JFigures/eventplane/eventPlaneResolution-A-%s-B-%s-C-%s.pdf",argv[2],argv[3],argv[4]));
   c1->Close();
 
   TCanvas *c2 = new TCanvas("c2","c2",800,600);
 
   psiFT0A->SetLineColor(kBlack);
   psiFT0A->SetStats(0);
-  psiFT0A->Draw("hist");
-  // psiFT0A->GetYaxis()->SetRangeUser(0, 6*10e3);
+  psiFT0A->Draw("EP");
+  // psiFT0A->GetYaxis()->SetRangeUser(0, 6*10e4);
 
   psiFT0C->SetLineColor(kRed);
-  psiFT0C->Draw("hist same");
+  psiFT0C->Draw("EPsame");
 
   psiFV0A->SetLineColor(kBlue);
-  psiFV0A->Draw("hist same");
+  psiFV0A->Draw("EPsame");
 
   psiTPCpos->SetLineColor(kGreen);
-  psiTPCpos->Draw("hist same");
+  psiTPCpos->Draw("EPsame");
 
   psiTPCneg->SetLineColor(kOrange);
-  psiTPCneg->Draw("hist same");
+  psiTPCneg->Draw("EPsame");
 
 
-  TLegend *leg2 = new TLegend(0.6,0.5,0.8,0.7);
+  TLegend *leg2 = new TLegend(0.4,0.45,0.6,0.65);
   leg2->AddEntry(psiFT0A,"FT0A","l");
   leg2->AddEntry(psiFT0C,"FT0C","l");
   leg2->AddEntry(psiFV0A,"FV0A","l");
@@ -95,7 +104,7 @@ int main(int argc, char *argv[]){
 
   leg2->Draw();
 
-  c2->SaveAs("figures/eventPlane.pdf");
+  c2->SaveAs("JFigures/eventplane/eventPlane.pdf");
   c2->Close();
 
 

@@ -31,13 +31,13 @@ TH1D* JEfficiency::Unfold(int iterations)
   
   RooUnfoldResponse response(hMeasured, hTrue, RESPONSE);
   RooUnfoldBayes unfold(&response, hist, iterations);
-  TH1D* hUnfolded = reinterpret_cast<TH1D*>(unfold.Hreco());
+  TH1D* hUnfolded = dynamic_cast<TH1D*>(unfold.Hreco());
   return hUnfolded;
 };
 
 TH1D* JEfficiency::Efficiency()
 {
-  TH1D* out = reinterpret_cast<TH1D*>(hmatched->Clone());
+  TH1D* out = dynamic_cast<TH1D*>(hmatched->Clone());
   // divide mathced by truth to get efficiency
   out->Divide(htruth);
   return out;

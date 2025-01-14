@@ -11,8 +11,8 @@ ClassImp(JEUtility);
 
 JEUtility::JEUtility(TFile* planes, double R) : R(R)
 {
-  h_in = reinterpret_cast<TH1*>(planes->Get("hv_0"));
-  h_out = reinterpret_cast<TH1*>(planes->Get("hv_1"));
+  h_in = dynamic_cast<TH1*>(planes->Get("hv_0"));
+  h_out = dynamic_cast<TH1*>(planes->Get("hv_1"));
 }
 
 JEUtility::~JEUtility() 
@@ -24,7 +24,7 @@ TH1* JEUtility::calculateV2Jet()
   const double cst = std::numbers::pi/( 3.0 * std::sqrt(3.0) );
 
   // TH1* hReturn = new TH1D("hV2Jet",";#it{p}_{T,jet}; #it{v}_{2}",210,0,210);
-  TH1* hReturn = reinterpret_cast<TH1*>(h_in->Clone("hV2Jet"));
+  TH1* hReturn = dynamic_cast<TH1*>(h_in->Clone("hV2Jet"));
 
   for (int i{1}; i < h_in->GetNbinsX()+1; i++)
   {
@@ -53,8 +53,8 @@ TH1* JEUtility::calculateV2Jet()
 void JEUtility::JERebin(int n, Double_t* bin_edges)
 {
   /* rebin */
-  h_in = reinterpret_cast<TH1F*>(h_in->Rebin(n, "hInReb", bin_edges));
-  h_out = reinterpret_cast<TH1F*>(h_out->Rebin(n, "hOutReb", bin_edges));
+  h_in = dynamic_cast<TH1F*>(h_in->Rebin(n, "hInReb", bin_edges));
+  h_out = dynamic_cast<TH1F*>(h_out->Rebin(n, "hOutReb", bin_edges));
 };
 
 std::pair<TH1*, TH1*> JEUtility::YieldCorrectedJet()
@@ -64,8 +64,8 @@ std::pair<TH1*, TH1*> JEUtility::YieldCorrectedJet()
     N_out^Corr= N_in + N_out / (1 + N_in^Corr/N_out^Corr)
   */
   TH1* h_rat = this->YieldRatio();
-  TH1* h_in_Corr = reinterpret_cast<TH1*>(h_in->Clone("hYieldCorrectedJet_in"));
-  TH1* h_out_Corr = reinterpret_cast<TH1*>(h_out->Clone("hYieldCorrectedJet_out"));
+  TH1* h_in_Corr = dynamic_cast<TH1*>(h_in->Clone("hYieldCorrectedJet_in"));
+  TH1* h_out_Corr = dynamic_cast<TH1*>(h_out->Clone("hYieldCorrectedJet_out"));
   for (int i{1}; i < h_in->GetNbinsX()+1; i++)
   {
     double num = h_in->GetBinContent(i) + h_out->GetBinContent(i);
@@ -89,7 +89,7 @@ TH1* JEUtility::YieldRatio()
 { 
   /* N_out/N_in */
   TH1* hV2 = this->calculateV2Jet();
-  TH1 *hRatio = reinterpret_cast<TH1*>(hV2->Clone("hRatio"));
+  TH1 *hRatio = dynamic_cast<TH1*>(hV2->Clone("hRatio"));
   for (int i{1}; i < hV2->GetNbinsX()+1; i++)
   {
     double num = 2 * std::numbers::pi - 1.0 * hV2->GetBinContent(i) * 6*std::sqrt(3);

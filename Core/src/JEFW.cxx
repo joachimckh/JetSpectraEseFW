@@ -51,7 +51,7 @@ std::pair<double, double> JEFW::getEPR3Val(TProfile* pAC, TProfile* pAB, TProfil
 void JEFW::Init(std::string type)
 {
   inFile = unique_ptr<TFile>(new TFile(path,"READ"));
-  dir = reinterpret_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
+  dir = dynamic_cast<TDirectoryFile*>(inFile->Get("jet-spectra-ese-task"));
   
   switch (getDataType(type)) {
     case DATA:
@@ -60,13 +60,13 @@ void JEFW::Init(std::string type)
         std::cerr << "could not find the thnsparse" << std::endl;
         return;
       }
-      h_pt_bkg = reinterpret_cast<TH1F*>(dir->Get("hJetPt_bkgsub")); /* hJetPt_bkgsub old */
+      h_pt_bkg = dynamic_cast<TH1F*>(dir->Get("hJetPt_bkgsub")); /* hJetPt_bkgsub old */
 
       break;
     case MC:
-      hist_mc = reinterpret_cast<TH2F*>(dir->Get("h_response_mat_match"));
-      hmatched = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt_match"));
-      htruth = reinterpret_cast<TH1F*>(dir->Get("h_part_jet_pt"));
+      hist_mc = dynamic_cast<TH2F*>(dir->Get("h_response_mat_match"));
+      hmatched = dynamic_cast<TH1F*>(dir->Get("h_part_jet_pt_match"));
+      htruth = dynamic_cast<TH1F*>(dir->Get("h_part_jet_pt"));
       break;
   }
   
@@ -122,10 +122,10 @@ void JEFW::setCentrality(const std::vector<int> vec_centlimits)
 
 TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits) 
 {
-  // TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
-  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Projection(1 /* jet pT */,2 /* Delta Phi */,3 /* q2 */)->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  // TH3F* hTMP = dynamic_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  TH3F* hTMP = dynamic_cast<TH3F*>(hist->Projection(1 /* jet pT */,2 /* Delta Phi */,3 /* q2 */)->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
   hTMP->GetZaxis()->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
-  TH1* h = reinterpret_cast<TH1*>(hTMP->Project3D("yx"));
+  TH1* h = dynamic_cast<TH1*>(hTMP->Project3D("yx"));
 
   
   TObjArray* hv_pt = new TObjArray();
@@ -140,7 +140,7 @@ TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits)
   auto ax2 = hTMP->GetYaxis(); //dphi
   
 
-  TH1D* projPhi = reinterpret_cast<TH1D*>(hTMP->ProjectionY("_dPHIY"));
+  TH1D* projPhi = dynamic_cast<TH1D*>(hTMP->ProjectionY("_dPHIY"));
   std::vector<int> fKeep;
   for (int i{1}; i<ax2->GetNbins()+1; i++) {
     float dphi = projPhi->GetBinContent(i);
@@ -148,12 +148,12 @@ TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits)
     fKeep.push_back(vPlane);
 
     if (vPlane<0) continue;
-    TH1D* hL = reinterpret_cast<TH1D*>(hv_pt->FindObject(Form("hv_%i",vPlane)));
+    TH1D* hL = dynamic_cast<TH1D*>(hv_pt->FindObject(Form("hv_%i",vPlane)));
     if (!hL) {
       printf("could not find histogram");
       continue;
     }
-    auto tmpH = reinterpret_cast<TH1D*>(hTMP->ProjectionX(Form("_tmpPTXjet%i",i),i,i,vec_q2limits.at(0),vec_q2limits.at(1)));
+    auto tmpH = dynamic_cast<TH1D*>(hTMP->ProjectionX(Form("_tmpPTXjet%i",i),i,i,vec_q2limits.at(0),vec_q2limits.at(1)));
     hL->Add(tmpH);
   }
   
@@ -164,8 +164,8 @@ TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits)
 
 TH1* JEFW::aziIntEse(std::vector<int> vec_q2limits)
 {
-  TH3F* hTMP = reinterpret_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
-  TH2F* h_ptq2 = reinterpret_cast<TH2F*>(hTMP->Project3D("zx"));
+  TH3F* hTMP = dynamic_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
+  TH2F* h_ptq2 = dynamic_cast<TH2F*>(hTMP->Project3D("zx"));
 
   TH1* h_out = h_ptq2->ProjectionX(Form("pt_q2_%i_%i",vec_q2limits.at(0),vec_q2limits.at(1)),vec_q2limits.at(0),vec_q2limits.at(1));
 
@@ -180,9 +180,9 @@ TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C, st
   const char* nameBC = Form("hCosPsi2%sm%s", B.c_str(), C.c_str());
 
 
-  TH3F* hAC = reinterpret_cast<TH3F*>(dir->Get(nameAC));
-  TH3F* hAB = reinterpret_cast<TH3F*>(dir->Get(nameAB));
-  TH3F* hBC = reinterpret_cast<TH3F*>(dir->Get(nameBC));
+  TH3F* hAC = dynamic_cast<TH3F*>(dir->Get(nameAC));
+  TH3F* hAB = dynamic_cast<TH3F*>(dir->Get(nameAB));
+  TH3F* hBC = dynamic_cast<TH3F*>(dir->Get(nameBC));
 
   hAC->GetXaxis()->SetRange(cent.first,cent.second);
   hAB->GetXaxis()->SetRange(cent.first,cent.second);
@@ -217,14 +217,14 @@ TH1F* JEFW::eventPlaneResolution(std::string A, std::string B, std::string C, st
 
 TH1* JEFW::getEventPlane(const char* name, std::pair<int,int> cent)
 {
-  TH2F* h = reinterpret_cast<TH2F*>(dir->Get(Form("hPsi2%s",name)));
+  TH2F* h = dynamic_cast<TH2F*>(dir->Get(Form("hPsi2%s",name)));
   TH1* hOut = h->ProjectionY(Form("psi2_%s",name),cent.first,cent.second);
   return hOut;
 };
 
 TH1* JEFW::getR2S(const char* name, std::pair<int,int> cent)
 {
-  TH3F* h = reinterpret_cast<TH3F*>(dir->Get(Form("hCosPsi2%s",name)));
+  TH3F* h = dynamic_cast<TH3F*>(dir->Get(Form("hCosPsi2%s",name)));
   // h->GetXaxis()->SetRange(cent.first,cent.second);
   TH1* hOut = h->ProjectionY(Form("PROJhCosPsi2%s",name),cent.first,cent.second);
   return hOut;
@@ -233,8 +233,8 @@ TH1* JEFW::getR2S(const char* name, std::pair<int,int> cent)
 void JEFW::JERebin(int n, Double_t* bin_edges)
 {
   /* rebin */
-  hmatched = reinterpret_cast<TH1F*>(hmatched->Rebin(n, "hMatchedReb", bin_edges));
-  htruth = reinterpret_cast<TH1F*>(htruth->Rebin(n, "hTruthReb", bin_edges));
+  hmatched = dynamic_cast<TH1F*>(hmatched->Rebin(n, "hMatchedReb", bin_edges));
+  htruth = dynamic_cast<TH1F*>(htruth->Rebin(n, "hTruthReb", bin_edges));
 };
 
 std::vector<TH1*> JEFW::inclusiveEPR(std::string A, std::string B, std::string C)
@@ -244,13 +244,13 @@ std::vector<TH1*> JEFW::inclusiveEPR(std::string A, std::string B, std::string C
   const char* nameBC = Form("hCosPsi2%sm%s", B.c_str(), C.c_str());
 
 
-  TH3F* hAC = reinterpret_cast<TH3F*>(dir->Get(nameAC));
-  TH3F* hAB = reinterpret_cast<TH3F*>(dir->Get(nameAB));
-  TH3F* hBC = reinterpret_cast<TH3F*>(dir->Get(nameBC));
+  TH3F* hAC = dynamic_cast<TH3F*>(dir->Get(nameAC));
+  TH3F* hAB = dynamic_cast<TH3F*>(dir->Get(nameAB));
+  TH3F* hBC = dynamic_cast<TH3F*>(dir->Get(nameBC));
 
-  auto hAC2 = reinterpret_cast<TH2*>(hAC->Project3D("yx"));
-  auto hAB2 = reinterpret_cast<TH2*>(hAB->Project3D("yx"));
-  auto hBC2 = reinterpret_cast<TH2*>(hBC->Project3D("yx"));
+  auto hAC2 = dynamic_cast<TH2*>(hAC->Project3D("yx"));
+  auto hAB2 = dynamic_cast<TH2*>(hAB->Project3D("yx"));
+  auto hBC2 = dynamic_cast<TH2*>(hBC->Project3D("yx"));
 
   TProfile *pAC = dynamic_cast<TProfile*>(hAC2->ProfileX());
   TProfile *pAB = dynamic_cast<TProfile*>(hAB2->ProfileX());

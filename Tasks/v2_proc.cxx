@@ -11,7 +11,7 @@ using std::unique_ptr;
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <R value, 0.2,0.4>" << std::endl;
+    std::cerr << "Usage: " << argv[1] << " <R value, 0.2,0.4>" << std::endl;
   }
 
   const char* Rval = argv[2];// "0.4";
