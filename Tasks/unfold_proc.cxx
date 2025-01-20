@@ -13,10 +13,8 @@ using std::unique_ptr;
 
 int main(int argc, char *argv[]){
 
-  if (argc < 3) {
-    std::cerr << "Usage: " << argv[0] << " <run number>" << std::endl;
-    std::cerr << "Usage: " << argv[1] << " <R>" << std::endl;
-    std::cerr << "Usage: " << argv[2] << " <mc run number>" << std::endl;
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <run number> <R> <mc run number>" << std::endl;
   }
   const char* DATArun = argv[1]; /* 286287, R=0.4 | 286533, R=0.2*/
   const char* Rval = argv[2];
@@ -26,7 +24,7 @@ int main(int argc, char *argv[]){
   int q2Max = 100;
 
   std::vector<int> q2{q2Min,q2Max};
-  auto objarr = jet->separatePlanes(q2);
+  auto objarr = jet->separatePlanes();
   // auto hist = reinterpret_cast<TH1F*>(objarr->FindObject("hv_1"));
   // auto hist = jet->GetHistPt(0);
 
@@ -97,6 +95,6 @@ int main(int argc, char *argv[]){
 
   
 
-  SepPlanes->SaveAs(Form("root_files/unfolded_q2_%i_%i_R%s.root",q2.at(0),q2.at(1),Rval));
+  SepPlanes->SaveAs(Form("processed_data/unfolded/unfolded_q2_%i_%i_R%s.root",q2.at(0),q2.at(1),Rval));
 
 }

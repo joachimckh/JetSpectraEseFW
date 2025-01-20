@@ -14,10 +14,7 @@
 int main(int argc, char *argv[]){
 
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[1] << " <run number>" << std::endl;
-    std::cerr << "Usage: " << argv[2] << " <A>" << std::endl;
-    std::cerr << "Usage: " << argv[3] << " <B>" << std::endl;
-    std::cerr << "Usage: " << argv[4] << " <C>" << std::endl;
+    std::cerr << "Usage: " << argv[1] << " <run number> <A> <B> <C>" << std::endl;
   }
 
   auto fin = Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/%s/AnalysisResults.root",argv[1]);
@@ -25,7 +22,7 @@ int main(int argc, char *argv[]){
   unique_ptr<JEFW> jet{new JEFW(fin)};
   jet->Init("data");
   std::pair<int,int> cent{30,50};
-  TH1F* hFT0A = jet->eventPlaneResolution("A","B","C",cent);
+  TH1F* hReso = jet->eventPlaneResolution("A","B","C",cent);
 
   /*    Default case is (jetSpectraEseTask):
           "cfgEPRefA": "FT0A",
@@ -51,24 +48,24 @@ int main(int argc, char *argv[]){
 
   TCanvas *c1 = new TCanvas("c1","c1",800,600);
 
-  hFT0A->SetLineColor(kBlack);
-  hFT0A->GetXaxis()->SetRangeUser(0,100);
-  hFT0A->GetYaxis()->SetRangeUser(0, 1);
-  hFT0A->Draw("hist");
+  hReso->SetLineColor(kBlack);
+  hReso->GetXaxis()->SetRangeUser(0,100);
+  hReso->GetYaxis()->SetRangeUser(0, 1);
+  hReso->Draw("hist");
 
 
-  TLegend *leg = new TLegend(0.5,0.2,0.7,0.4);
-  leg->AddEntry(hFT0A,"FT0A","l");
+  TLegend *leg = new TLegend(0.5,0.2,0.8,0.5);
+  leg->AddEntry(hReso,Form("A: %s, B: %s, C: %s",argv[2],argv[3],argv[4]),"l");
 
   leg->Draw();
 
-  TFile *res_out = new TFile(Form("processed_data/eventPlaneResolution-A-%s-B-%s-C-%s.root",argv[2],argv[3],argv[4]),"RECREATE"); 
-  hFT0A->Write();
+  TFile *res_out = new TFile(Form("processed_data/ep/eventPlaneResolution-A-%s-B-%s-C-%s.root",argv[2],argv[3],argv[4]),"RECREATE"); 
+  hReso->Write();
   res_out->Close();
   double sum{0};
   double weights{0};
-  for (int i{1}; i<hFT0A->GetNbinsX(); i++) {
-    sum += hFT0A->GetBinContent(i);
+  for (int i{1}; i<hReso->GetNbinsX(); i++) {
+    sum += hReso->GetBinContent(i);
     weights += 1;
   }
   std::cout << "Mean: " << sum/weights << std::endl;

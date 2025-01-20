@@ -1,6 +1,6 @@
 #!/bin/bash
-fRun="325059"
-A="FT0A"
+fRun="325738"
+A="FT0C"
 B="TPCpos"
 C="TPCneg"
 

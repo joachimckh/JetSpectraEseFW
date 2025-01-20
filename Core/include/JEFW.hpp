@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include <iostream>
+#include <numbers>
 
 #include <TObjArray.h>
 #include <TH3D.h>
@@ -41,7 +42,8 @@ class JEFW {
 
     int planeState(const float &dPhi);
     void setCentrality(const std::vector<int> vec_centlimits);
-    TObjArray* separatePlanes(std::vector<int> vec_q2limits);
+    void setq2Range(const std::vector<int> vec_q2limits);
+    TObjArray* separatePlanes();
     TH1* aziIntEse(std::vector<int> vec_q2limits);
 
     THnSparse* getHist() const {
@@ -68,6 +70,8 @@ class JEFW {
     std::vector<TH1*> inclusiveEPR(std::string A, std::string B, std::string C);
 
     void JERebin(int n, Double_t* bin_edges);
+
+    double eventCounter(const int iBin);
 
   private:
     unique_ptr<TFile> inFile;

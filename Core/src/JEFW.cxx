@@ -55,7 +55,7 @@ void JEFW::Init(std::string type)
   
   switch (getDataType(type)) {
     case DATA:
-      hist = dynamic_cast<THnSparse*>(dir->Get("hCentJetPtdPhiq2;1;1")); /* hJetPtdPhiq2 old */
+      hist = dynamic_cast<THnSparse*>(dir->Get("hCentJetPtdPhiq2;1")); /* hJetPtdPhiq2 old */
       if (!hist) {
         std::cerr << "could not find the thnsparse" << std::endl;
         return;
@@ -110,9 +110,11 @@ void JEFW::drawXYZ(const int lvl)
 
 int JEFW::planeState(const float &dPhi) 
 {
-  if ( TMath::Abs(TMath::Cos(dPhi)) <= TMath::Sqrt(2)/2.0 ) return 0; // in plane 30 * TMath::Pi()/180
-  if ( TMath::Abs(TMath::Cos(dPhi)) > TMath::Sqrt(2)/2.0 ) return 1; // out of plane 60 * TMath::Pi()/180
-  return -1;
+  // if ( std::abs(std::cos(dPhi)) <= TMath::Sqrt(2)/2.0 ) return 0; /* Catie? */
+  // if ( std::abs(std::cos(dPhi)) > TMath::Sqrt(2)/2.0 ) return 1;
+  if ( std::abs(dPhi) < std::numbers::pi/6 || std::abs(dPhi) > std::numbers::pi - std::numbers::pi/6) return 0; // pi/6 = 30 degrees in-plane
+  if ( std::abs(dPhi) > std::numbers::pi/3 && std::abs(dPhi) < std::numbers::pi - std::numbers::pi/3) return 1; // pi/3 = 60 degrees out-of-plane
+  else return 2;
 };
 
 void JEFW::setCentrality(const std::vector<int> vec_centlimits)
@@ -120,46 +122,48 @@ void JEFW::setCentrality(const std::vector<int> vec_centlimits)
   hist->GetAxis(0)->SetRange(vec_centlimits.at(0),vec_centlimits.at(1));
 };
 
-TObjArray* JEFW::separatePlanes(std::vector<int> vec_q2limits) 
+void JEFW::setq2Range(const std::vector<int> vec_q2limits)
 {
-  // TH3F* hTMP = dynamic_cast<TH3F*>(hist->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
-  TH3F* hTMP = dynamic_cast<TH3F*>(hist->Projection(1 /* jet pT */,2 /* Delta Phi */,3 /* q2 */)->Clone(Form("_pt_dPhi_q2_%i_%i", vec_q2limits.at(0), vec_q2limits.at(1))));
-  hTMP->GetZaxis()->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
-  TH1* h = dynamic_cast<TH1*>(hTMP->Project3D("yx"));
+  hist->GetAxis(3)->SetRange(vec_q2limits.at(0),vec_q2limits.at(1));
+};
 
+TObjArray* JEFW::separatePlanes() 
+{
+  TH2* h = dynamic_cast<TH2*>(hist->Projection(2,1));
+  if (!h) std::cerr << "could not project the TH3" << std::endl;
   
   TObjArray* hv_pt = new TObjArray();
   hv_pt->SetName("planes");
   hv_pt->SetOwner(kTRUE);
 
-  auto ax1 = hTMP->GetXaxis(); //pt
-  for (int i{0}; i<2; i++) {
+  auto ax1 = h->GetXaxis(); //pt
+  auto ax2 = h->GetYaxis(); //dphi
+
+  for (int i{0}; i<3; i++) {
     hv_pt->Add(new TH1F(Form("hv_%i",i),";#it{p}_{T,jet};entries",ax1->GetNbins(), ax1->GetXmin(), ax1->GetXmax()));
   }
-  
-  auto ax2 = hTMP->GetYaxis(); //dphi
-  
+  hv_pt->Add(new TH1F("hv_planestatus",";plane status;entries",ax2->GetNbins(), ax2->GetXmin(), ax2->GetXmax()));
 
-  TH1D* projPhi = dynamic_cast<TH1D*>(hTMP->ProjectionY("_dPHIY"));
-  std::vector<int> fKeep;
+  TH1D* projPhi = dynamic_cast<TH1D*>(h->ProjectionY("_dphi_hist"));
+  
   for (int i{1}; i<ax2->GetNbins()+1; i++) {
-    float dphi = projPhi->GetBinContent(i);
+    float dphi = projPhi->GetBinCenter(i);
     int vPlane = this->planeState(dphi);
-    fKeep.push_back(vPlane);
+    // std::cout << "bin center i: " << i << " dphi: " << dphi << " plane: " << vPlane << std::endl;
+    auto hplane = dynamic_cast<TH1F*>(hv_pt->FindObject("hv_planestatus"));
+    hplane->SetBinContent(i, vPlane);
 
-    if (vPlane<0) continue;
-    TH1D* hL = dynamic_cast<TH1D*>(hv_pt->FindObject(Form("hv_%i",vPlane)));
+    TH1F* hL = dynamic_cast<TH1F*>(hv_pt->FindObject(Form("hv_%i",vPlane)));
     if (!hL) {
-      printf("could not find histogram");
+      std::cerr << "could not find histogram" << std::endl;
       continue;
     }
-    auto tmpH = dynamic_cast<TH1D*>(hTMP->ProjectionX(Form("_tmpPTXjet%i",i),i,i,vec_q2limits.at(0),vec_q2limits.at(1)));
-    hL->Add(tmpH);
+
+    auto tmpHist = dynamic_cast<TH1D*>(h->ProjectionX(Form("_proj_pTjet%i",i),i,i));
+    if (!tmpHist) std::cerr << "could not project the TH2 for add" << std::endl;
+    hL->Add(tmpHist);
   }
-  
   return hv_pt;
-  // hv_pt->SaveAs(Form("root_files/SeparatePtPlane_q2_%i_%i.root",vec_q2limits.at(0),vec_q2limits.at(1)));
-  // delete hv_pt;
 };
 
 TH1* JEFW::aziIntEse(std::vector<int> vec_q2limits)
@@ -274,3 +278,10 @@ std::vector<TH1*> JEFW::inclusiveEPR(std::string A, std::string B, std::string C
   vec.push_back(pBC);
   return vec;
 };
+
+double JEFW::eventCounter(const int iBin)
+{
+  TH1F* h = dynamic_cast<TH1F*>(dir->Get("hEventCounter"));
+  return h->GetBinContent(iBin);
+};
+

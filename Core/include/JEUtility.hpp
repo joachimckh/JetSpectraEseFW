@@ -18,6 +18,8 @@
 #include <TH1D.h>
 #include <TFile.h>
 
+#include <TH1.h>
+
 
 class JEUtility {
   public:
@@ -43,3 +45,14 @@ class JEUtility {
   ClassDef(JEUtility, 1); // jet utility fw class
 
 };
+
+namespace jetutility 
+{
+
+inline void scale(TH1* h)
+{
+  double cst = 1.0/(h->Integral());
+  h->Scale(cst);
+}
+
+} // namespace jetutility
