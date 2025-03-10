@@ -7,4 +7,4 @@ fi
 
 rval="$1"
 
-./build/Tasks/v2-proc "${rval}"
+./build/src/Tasks/v2-proc "${rval}"

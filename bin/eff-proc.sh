@@ -1,12 +1,10 @@
-#!/bin/bash
-fRun="284907"
-while [[ "$#" -gt 0 ]]; do
-  case $1 in
-    --fRun) nEvents="$2"; shift ;; 
-    *) echo "Unknown parameter passed: $1"; exit 1 ;;
-  esac
-  shift
-done
 
-echo "Running eff_proc with run=${fRun}"
-./build/Tasks/eff-proc "${fRun}"
+# mcRun="346927"
+# dataset="LHC24g3_medium"
+
+mcRun="349100"
+dataset="LHC24f3b"
+
+#<run number> <R> <mc run number> <data size> <mc size>" 
+echo "Running eff_proc"
+./build/src/Tasks/eff-proc "${mcRun}" "${dataset}"

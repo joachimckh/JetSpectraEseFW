@@ -16,6 +16,4 @@ set(ROOT_ROOTCLING_EXECUTABLE "${HOME_DIR}/alisw/sw/osx_arm64/ROOT/v6-32-06-alic
 include_directories(${HOME_DIR}/alisw/sw/osx_arm64/RooUnfold/latest-o2/include)
 link_directories(${HOME_DIR}/alisw/sw/osx_arm64/RooUnfold/latest-o2/lib)
 
-add_subdirectory(Core)
-add_subdirectory(Tasks)
-add_subdirectory(JAnalysis)
+add_subdirectory(src)

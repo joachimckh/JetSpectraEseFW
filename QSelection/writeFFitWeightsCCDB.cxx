@@ -5,7 +5,8 @@
 
 void writeFFitWeightsCCDB(){
 
-  const char *path = "/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/ese/297376/AnalysisResults.root";
+  
+  const char *path = "/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23_PbPb_pass4_goldenRuns/ese/342643/AnalysisResults.root";
   TFile* f = new TFile(path, "READ");
 
   TDirectory *dir = reinterpret_cast<TDirectory*>(f->Get("ese-table-producer"));
@@ -22,7 +23,7 @@ void writeFFitWeightsCCDB(){
   w->qSelection(nh, stv);
 
 
-  TFile *fout = new TFile("Weights_LHC23zzh_pass4_small_Calib4_FT0C.root","RECREATE");
+  TFile *fout = new TFile("Weights_LHC23_PbPb_pass4_goldenRuns_Calib4_FT0C.root","RECREATE");
 
   w->Write("ccdb_object");
   fout->Close();
