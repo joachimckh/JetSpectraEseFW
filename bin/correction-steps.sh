@@ -6,4 +6,4 @@ C="TPCneg"
 rSize="small"
 
 
-./build/src/JAnalysis/correction-steps "${fRun}" "${A}" "${B}" "${C}" "${rSize}"
+./analysis/build/src/JAnalysis/correction-steps "${fRun}" "${A}" "${B}" "${C}" "${rSize}"

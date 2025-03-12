@@ -7,4 +7,4 @@ fi
 
 rval="$1"
 
-./build/src/JAnalysis/pt-raw-inclusive "${rval}"
+./analysis/build/src/JAnalysis/pt-raw-inclusive "${rval}"

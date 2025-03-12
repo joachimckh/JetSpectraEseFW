@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   }
   rootStyle();
   const char* bkgRun{argv[1]};
-  const char* bkgSize{argv[2]};
+  const char* bkgSize{argv[2]}; //
   int q2Min = std::atoi(argv[3]);
   int q2Max = std::atoi(argv[4]);
   

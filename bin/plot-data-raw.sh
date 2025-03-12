@@ -11,4 +11,4 @@ path="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23_PbPb_p
 # path="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/367114/AnalysisResults.root" # R=0.4
 r="0.2"
 
-./build/src/JAnalysis/plot-data-raw "${path}" "${r}"
+./analysis/build/src/JAnalysis/plot-data-raw "${path}" "${r}"

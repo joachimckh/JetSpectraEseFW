@@ -13,5 +13,5 @@
 pathT4="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23_PbPb_pass4_goldenRuns/jet/366086/AnalysisResults.root"
 nameT4="HL golden runs rho(phi)"
 
-./build/src/Tasks/compare-pt-rhophi "${pathT4}" "${nameT4}"
+./analysis/build/src/Tasks/compare-pt-rhophi "${pathT4}" "${nameT4}"
 

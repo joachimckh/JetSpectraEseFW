@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./build/src/Tasks/compare-online-offline
+./analysis/build/src/Tasks/compare-online-offline
 

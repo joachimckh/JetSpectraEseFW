@@ -12,4 +12,4 @@ rSize="LHC23_PbPb_pass4_goldenRuns"
 
 
 echo "Running event-plate-res with run=${fRun} and A=${A} B=${B} C=${C}" size=${rSize}
-./build/src/JAnalysis/event-plate-res "${fRun}" "${A}" "${B}" "${C}" "${rSize}"
+./analysis/build/src/JAnalysis/event-plate-res "${fRun}" "${A}" "${B}" "${C}" "${rSize}"

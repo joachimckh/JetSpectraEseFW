@@ -39,5 +39,5 @@ pathT5="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23_PbPb
 nameT5="HL golden runs rho(phi)"
 
 
-./build/src/Tasks/compare-pt-yield "${path1}" "${name1}" "${pathT5}" "${nameT5}"
+./analysis/build/src/Tasks/compare-pt-yield "${path1}" "${name1}" "${pathT5}" "${nameT5}"
 

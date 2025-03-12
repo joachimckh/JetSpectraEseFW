@@ -21,4 +21,4 @@ svdIterations="2"
 
 # <run number> <data size> <mc run number> <mc size> <bkg run> <bkg size> <mc pp run> <mc pp dataset> <R>
 echo "Running unfold-proc"
-./build/src/Tasks/unfold-proc "${fRun}" "${data_size}" "${mcRun}" "${mc_size}" "${bkgRun}" "${bkg_size}" "${mcppRun}" "${mcpp_size}" "${rval}" "${bayesIterations}" "${svdIterations}"
+./analysis/build/src/Tasks/unfold-proc "${fRun}" "${data_size}" "${mcRun}" "${mc_size}" "${bkgRun}" "${bkg_size}" "${mcppRun}" "${mcpp_size}" "${rval}" "${bayesIterations}" "${svdIterations}"

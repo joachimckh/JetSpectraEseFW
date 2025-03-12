@@ -7,4 +7,4 @@ dataset="LHC24f3b"
 
 #<run number> <R> <mc run number> <data size> <mc size>" 
 echo "Running eff_proc"
-./build/src/Tasks/eff-proc "${mcRun}" "${dataset}"
+./analysis/build/src/Tasks/eff-proc "${mcRun}" "${dataset}"

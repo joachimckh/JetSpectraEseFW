@@ -6,4 +6,4 @@ sub1=""
 sub2="_AFT0C"
 
 
-./build/src/Systematics/sysEPFT0C "${default}" "${sub1}" "${FT0C}" "${sub2}" 
+./analysis/build/src/Systematics/sysEPFT0C "${default}" "${sub1}" "${FT0C}" "${sub2}" 

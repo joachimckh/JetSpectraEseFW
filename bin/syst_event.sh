@@ -9,4 +9,4 @@ subLead=""
 vtxz7="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/367265/AnalysisResults.root"
 subVtx=""
 
-./build/src/Systematics/sysEvent "${default}" "${sub1}" "${Lead6}" "${subLead}" "${vtxz7}" "${subVtx}" 
+./analysis/build/src/Systematics/sysEvent "${default}" "${sub1}" "${Lead6}" "${subLead}" "${vtxz7}" "${subVtx}" 
