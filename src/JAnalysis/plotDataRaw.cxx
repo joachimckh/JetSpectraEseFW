@@ -19,6 +19,8 @@ int main(int argc, char *argv[]) {
 
 
   const char* pathFull = argv[1];
+  const char* rVal = argv[2];
+  float r = std::stof(rVal);
   auto jet = std::unique_ptr<JEWrapper>(new JEWrapper(pathFull));
 
   auto jet2 = std::unique_ptr<JEWrapper>(new JEWrapper(pathFull));
@@ -69,7 +71,7 @@ int main(int argc, char *argv[]) {
 
   rootStyle();
 
-  std::vector<int> xAxis = {30,160};
+  std::vector<int> xAxis = {30,120};
 
 
   // TCanvas c1rat("c1rat","",400,200);
@@ -122,8 +124,6 @@ int main(int argc, char *argv[]) {
   // auto hRatio_low_unCorr = jet->getPtRatio<q2RangeType::LOW, Rebin::YES, false>();
   // auto hRatio_high_unCorr = jet->getPtRatio<q2RangeType::HIGH, Rebin::YES, false>();
   
-
-  
   
   hRatCorr->GetYaxis()->SetTitle("corrected (after/before)");
   hRatCorr->GetXaxis()->SetRangeUser(xAxis.at(0),xAxis.at(1));
@@ -151,10 +151,10 @@ int main(int argc, char *argv[]) {
   TLatex latex3;
   latex3.SetTextSize(0.04);  
   latex3.DrawLatexNDC(.2, .3, "Pb--Pb #sqrt{s_{NN}} = 5.36 TeV");
-  latex3.DrawLatexNDC(.2,.25,Form("Charged jets, anti-#it{k}_{T}, R=%s","0.2"));
-  latex3.DrawLatexNDC(.2,.2,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-0.2));
+  latex3.DrawLatexNDC(.2,.25,Form("Charged jets, anti-#it{k}_{T}, R=%s",rVal));
+  latex3.DrawLatexNDC(.2,.2,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-r));
 
-  c2.SaveAs(Form("JFigures/yield/yieldRatio-cent-%i-%i-q2-%i-%i-R%s.pdf",30,50,0,100,"0.2"));
+  c2.SaveAs(Form("JFigures/yield/yieldRatio-cent-%i-%i-q2-%i-%i-R%s.pdf",30,50,0,100,rVal));
 
 
   return 0;

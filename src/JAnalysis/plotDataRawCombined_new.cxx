@@ -13,9 +13,38 @@
 #include "JEWrapper.hpp"
 #include "rootStyle.hpp"
 
+#include <TGraphAsymmErrors.h>
+
+TGraphAsymmErrors* addSystematicErrorBox(TH1* hist, double systematicPercent) {
+  if (!hist) return nullptr;
+
+  int nBins = hist->GetNbinsX();
+  auto* graph = new TGraphAsymmErrors(nBins);
+
+  Color_t histColor = hist->GetLineColor();
+
+  for (int i = 1; i <= nBins; ++i) {
+    double x = hist->GetBinCenter(i);
+    double y = hist->GetBinContent(i);
+    double errSys = systematicPercent * 0.01 * y;
+    double xErr = hist->GetBinWidth(i) / 2.0;
+
+    graph->SetPoint(i - 1, x, y);
+    graph->SetPointError(i - 1, xErr, xErr, errSys, errSys);
+  }
+
+  graph->SetFillColorAlpha(histColor, 0.3); // Gray color, 30% transparency
+  graph->SetMarkerSize(0);
+  graph->SetLineWidth(0);
+
+  return graph;
+}
+
 int main(int argc, char *argv[]) {
 
   const char* pathFull = argv[1];
+  const char* rVal = argv[2];
+  float r = std::stof(rVal);
   auto jet = std::unique_ptr<JEWrapper>(new JEWrapper(pathFull));
 
   auto h_in_inclusive_low = jet->getPt<Plane::IN, q2RangeType::LOW, Rebin::YES>();
@@ -42,9 +71,20 @@ int main(int argc, char *argv[]) {
   h_in_inclusive_high->GetYaxis()->SetTitle("#frac{1}{#it{N}_{ev}} #frac{d^{2}N}{d#it{p}_{T}d#it{#eta}}");
 
   h_in_inclusive_high->Draw("EP");
+  TGraphAsymmErrors* sysErrorGraph1 = addSystematicErrorBox(h_in_inclusive_high, 4.0);
+  sysErrorGraph1->Draw("E2same");
+
   h_out_inclusive_high->Draw("EP same");
+  TGraphAsymmErrors* sysErrorGraph2 = addSystematicErrorBox(h_out_inclusive_high, 4.0);
+  sysErrorGraph2->Draw("E2same");
+
   h_in_inclusive_low->Draw("EP same");
+  TGraphAsymmErrors* sysErrorGraph3 = addSystematicErrorBox(h_in_inclusive_low, 4.0);
+  sysErrorGraph3->Draw("E2same");
+
   h_out_inclusive_low->Draw("EP same");
+  TGraphAsymmErrors* sysErrorGraph4 = addSystematicErrorBox(h_out_inclusive_low, 4.0);
+  sysErrorGraph4->Draw("E2same");
 
 
   TLegend* leg = new TLegend(  0.2,  0.2,  0.4, 0.4);
@@ -61,11 +101,11 @@ int main(int argc, char *argv[]) {
   TLatex latex;
   latex.SetTextSize(0.04);  
   latex.DrawLatexNDC(.4, 0.8, "Pb--Pb #sqrt{s_{NN}} = 5.36 TeV");
-  latex.DrawLatexNDC(.4,.75,Form("Charged jets, anti-#it{k}_{T}, R=%s","0.2"));
-  latex.DrawLatexNDC(.4,.7,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-0.2));
+  latex.DrawLatexNDC(.4,.75,Form("Charged jets, anti-#it{k}_{T}, R=%s",rVal));
+  latex.DrawLatexNDC(.4,.7,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-r));
   // latex.DrawLatexNDC(.4,.65,"#it{q}_{2}^{FT0C}");
     
-  c.SaveAs(Form("JFigures/yield/pt-in-and-outofplane-combined-yieldcorrected-cent-%i-%i-q2-R%s.pdf",30,50,"0.2"));
+  c.SaveAs(Form("JFigures/yield/pt-in-and-outofplane-combined-yieldcorrected-cent-%i-%i-q2-R%s.pdf",30,50,rVal));
 
 
   TCanvas c2("c2","",400,200);
@@ -92,10 +132,10 @@ int main(int argc, char *argv[]) {
   TLatex latex2;
   latex2.SetTextSize(0.04);  
   latex2.DrawLatexNDC(.2, 0.85, "Pb--Pb #sqrt{s_{NN}} = 5.36 TeV");
-  latex2.DrawLatexNDC(.2,.8,Form("Charged jets, anti-#it{k}_{T}, R=%s","0.2"));
-  latex2.DrawLatexNDC(.2,.75,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-0.2));
+  latex2.DrawLatexNDC(.2,.8,Form("Charged jets, anti-#it{k}_{T}, R=%s",rVal));
+  latex2.DrawLatexNDC(.2,.75,Form("#it{p}_{T}^{lead track}>5 GeV/#it{c}, |#eta_{jet}|<%.1f",0.9-r));
 
-  c2.SaveAs(Form("JFigures/yield/pt-in-and-outofplane-combined-ratio-cent-%i-%i-q2-R%s.pdf",30,50,"0.2"));
+  c2.SaveAs(Form("JFigures/yield/pt-in-and-outofplane-combined-ratio-cent-%i-%i-q2-R%s.pdf",30,50,rVal));
 
 
 }

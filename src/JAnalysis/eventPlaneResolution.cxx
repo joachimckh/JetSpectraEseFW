@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
     std::cerr << "Usage: " << argv[1] << " <run number> <A> <B> <C> <size>" << std::endl;
   }
 
-  auto fin = Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_%s/jet/%s/AnalysisResults.root",argv[5], argv[1]);
+  auto fin = Form("/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/%s/jet/%s/AnalysisResults.root",argv[5], argv[1]);
 
   unique_ptr<JEFW> jet{new JEFW(fin,JEFW::DataType::DATA,"")};
   std::pair<int,int> cent{30,50};

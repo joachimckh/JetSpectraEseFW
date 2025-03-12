@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <TH1.h>
+#include <TF1.h>
 
 class JESys {
 
@@ -33,7 +34,10 @@ public:
   }
 
   void fitRatio() {
-    ratio->Fit("pol0");
+    TF1* fitFunc = new TF1("fitFunc", "pol0", 30, 120);
+    fitFunc->SetParameter(0, 1);
+    ratio->Fit(fitFunc, "R");
+    // ratio->Fit("pol0");
   }
 
 

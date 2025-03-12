@@ -54,7 +54,7 @@ public:
       hSparse->GetAxis(0)->SetRange(cent_30_50.at(0), cent_30_50.at(1));
       jetPt = dynamic_cast<TH1*>(hSparse->Projection(1));
       jetPt->SetName("jetPt");
-      if (rebin == Rebin::YES)
+      if constexpr (rebin == Rebin::YES)
         jetPt = jetPt->Rebin(nBins, "jetPt_reb", binEdges.data());
 
       jetPt->Scale(1.0 / eventScale, "width");
@@ -96,6 +96,10 @@ public:
     if (jetPt_OutDividedIn_q2Low) jetPt_OutDividedIn_q2Low->SetMarkerSize(0.8);
   }
 
+  void setInclusiveR2(const double &r2) {
+    incR2 = r2;
+  }
+
 private:
   TFile *file{nullptr};
   TDirectory *dir{nullptr};
@@ -131,9 +135,9 @@ private:
   int nBins;
   std::vector<double> binEdges;
 
-  static constexpr double lowR2 = 0.54;
-  static constexpr double incR2 = 0.68;
-  static constexpr double highR2 = 0.61;
+  double lowR2 = 0.546;
+  double incR2 = 0.671;
+  double highR2 = 0.608;
   
 
   template <bool rhoPhi = true, q2RangeType rangeType>

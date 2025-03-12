@@ -7,29 +7,8 @@
 
 # rval="$1"
 
-# centmin="30"
-# centmax="50"
-
-# qmin="0"
-# qmax="100"
-# reso="0.606452"
-# echo "Running plot-data-raw with q2min=${qmin}, q2max=${qmax}, centmin=${centmin}, centmax=${centmax}, jet Radius=${rval}"
-# ./build/src/JAnalysis/plot-data-raw "${qmin}" "${qmax}" "${centmin}" "${centmax}" "${rval}" "${reso}"
-
-# qmin="0"
-# qmax="30"
-# reso="0.54"
-# echo "Running plot-data-raw with q2min=${qmin}, q2max=${qmax}, centmin=${centmin}, centmax=${centmax}, jet Radius=${rval}"
-# ./build/src/JAnalysis/plot-data-raw "${qmin}" "${qmax}" "${centmin}" "${centmax}" "${rval}" "${reso}"
-
-# qmin="70"
-# qmax="100"
-# reso="0.68"
-# echo "Running plot-data-raw with q2min=${qmin}, q2max=${qmax}, centmin=${centmin}, centmax=${centmax}, jet Radius=${rval}"
-# ./build/src/JAnalysis/plot-data-raw "${qmin}" "${qmax}" "${centmin}" "${centmax}" "${rval}" "${reso}"
-
-
-
 path="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23_PbPb_pass4_goldenRuns/jet/366086/AnalysisResults.root"
+# path="/Users/joachimcarlokristianhansen/jet_analysis/hyperloop_data/LHC23zzh_pass4_small/jet/367114/AnalysisResults.root" # R=0.4
+r="0.2"
 
-./build/src/JAnalysis/plot-data-raw "${path}"
+./build/src/JAnalysis/plot-data-raw "${path}" "${r}"

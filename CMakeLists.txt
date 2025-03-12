@@ -16,4 +16,10 @@ set(ROOT_ROOTCLING_EXECUTABLE "${HOME_DIR}/alisw/sw/osx_arm64/ROOT/v6-32-06-alic
 include_directories(${HOME_DIR}/alisw/sw/osx_arm64/RooUnfold/latest-o2/include)
 link_directories(${HOME_DIR}/alisw/sw/osx_arm64/RooUnfold/latest-o2/lib)
 
+
+
+set(JETCORE_DIR "${HOME_DIR}/jet_analysis/localr/jeseFW/JetSpectraEseFW/JetCore")
+set(JETCORE_LIBRARIES "${JETCORE_DIR}/build/libJetCore.dylib")
+include_directories(${JETCORE_DIR}/include)
+
 add_subdirectory(src)
